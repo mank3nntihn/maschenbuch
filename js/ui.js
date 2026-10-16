@@ -3,6 +3,8 @@ function applyTheme(){const th=THEMES[DB.theme]||THEMES.rose,rs=document.documen
 const TABS=['count','steps','wool','3d','size'];
 function render(){
   applyTheme();$('pop').hidden=true;
+  if(!GATE.ok()){V3.stop();LIVE.stop();FOC.stop();stopHelp();GATE.view();return}
+  document.body.classList.remove('gate');
   const c=calc();S.row=Math.min(S.row,c.total);
   $('ttl').textContent=tab==='home'?'Maschenbuch':S.name;$('ttl').style.cursor='pointer';$('ttl').onclick=()=>{tab='home';render();scrollTo(0,0)};
   $('mb').setAttribute('aria-label',t('menu'));
@@ -72,7 +74,7 @@ function renderMenu(){
   <div class="three"><button onclick="newP()">+ ${t('newP')}</button><button onclick="renP()">${t('rename')}</button><button onclick="delP()">${t('del')}</button></div>
   ${L('home','🏠 '+(DB.lang==='de'?'Alle Projekte':'All projects'))}${L('count',t('tabsGo'))}
   <h2 style="margin-top:24px">Extras</h2>
-  ${L('stash','🧶 '+t('stash'))}${L('shop','🛒 '+t('shop')+(open?` (${open})`:''))}${L('tausch','🤝 '+(DB.lang==='de'?'Tauschbörse':'Yarn swap')+(TB.badge()?` (${TB.badge()})`:''))}${L('help','🎓 '+(DB.lang==='de'?'Hilfe & Techniken':'Help & techniques'))}${L('gloss','📖 '+t('gloss'))}${L('settings','⚙️ '+t('settings'))}
+  ${L('stash','🧶 '+t('stash'))}${L('shop','🛒 '+t('shop')+(open?` (${open})`:'')+(DB.shop.some(s=>!s.d&&(PK.match(s)||{}).vorher)?' 🏷️':''))}${L('tausch','🤝 '+(DB.lang==='de'?'Tauschbörse':'Yarn swap')+(TB.badge()?` (${TB.badge()})`:''))}${L('help','🎓 '+(DB.lang==='de'?'Hilfe & Techniken':'Help & techniques'))}${L('gloss','📖 '+t('gloss'))}${L('settings','⚙️ '+t('settings'))}
   ${SYNC.html()}
   <h2 style="margin-top:24px">${DB.lang==='de'?'Datensicherung':'Backup'}</h2>
   <div class="two" style="margin-top:8px"><button onclick="exportDB()">⬇️ Export</button><button onclick="$('impf').click()">⬆️ Import</button></div>

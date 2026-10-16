@@ -23,13 +23,23 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
     this.c=supabase.createClient(this.url,this.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     this.c.auth.onAuthStateChange((ev,s)=>{const u=s&&s.user||null;if((u&&u.id)===(this.user&&this.user.id))return;this.user=u;this.start()});
     this.c.auth.getSession().then(({data})=>{const u=data.session&&data.session.user||null;if(u&&(!this.user||this.user.id!==u.id)){this.user=u;this.start()}})},
-  stop(){if(this.ch){this.c.removeChannel(this.ch);this.ch=null}if(this.pch){this.c.removeChannel(this.pch);this.pch=null}
+  stop(){clearTimeout(this.jt);if(this.ch){this.c.removeChannel(this.ch);this.ch=null}if(this.pch){this.c.removeChannel(this.pch);this.pch=null}
     this.online=new Set();this.tracked=false;TB.rows=[];TB.wish=[];TB.loaded=false},
   start(){this.stop();
     if(!this.user){SYNC.status('none');KAL.id=null;render();return}
+    if(!GATE.ok()){render();return}
     KAL.id=this.user.id;SYNC.st='busy';SYNC.status('busy');this.first=true;
     // Prüfen, ob das Konto auf dem Server noch existiert (z. B. nach dem Löschen in Supabase)
     if(navigator.onLine)this.c.auth.getUser().then(({data,error})=>{if(error&&error.status&&error.status<500||!error&&!data.user)this.gone()}).catch(()=>{});
+    this.join()},
+  // Mit dem Einladungscode dem Freundeskreis beitreten (Mitglieder bleiben es, auch wenn sich der Code ändert)
+  async join(){const me=this.user;let r;try{r=await this.c.rpc('kreis_beitreten',{code:GATE.code()})}catch(e){r={error:e}}
+    if(this.user!==me||!me)return;
+    if(r.error){SYNC.status('err');clearTimeout(this.jt);this.jt=setTimeout(()=>{if(this.user===me&&!this.ch)this.join()},navigator.onLine?10000:60000);return}
+    if(!r.data)return GATE.reset(DB.lang==='de'?'Der Einladungscode hat sich geändert. Bitte gib den neuen Code ein.':'The invitation code has changed. Please enter the new code.');
+    this.connect()},
+  // Live-Verbindungen öffnen und alles laden (erst nach dem Beitritt, sonst lässt die Datenbank nichts durch)
+  connect(){
     this.ch=this.c.channel('mb-'+this.user.id)
       .on('postgres_changes',{event:'*',schema:'public',table:'user_state',filter:'user_id=eq.'+this.user.id},p=>{if(p.new&&p.new.data)this.remote(p.new.data)})
       .on('postgres_changes',{event:'*',schema:'public',table:'kal'},p=>{if(p.eventType==='DELETE'){const id=p.old&&p.old.user_id;if(id){delete KAL.peers[id];delete KAL.cache[id];KAL.paint()}}else this.kalRow(p.new)})
@@ -65,7 +75,7 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
     catch(e){SYNC.status('err');clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),navigator.onLine?10000:60000)}
     finally{this.busy=false}},
   // Nach einem Funkloch: Stand holen, eigene Änderungen nachschicken
-  backOnline(){if(!this.user)return;this.c.from('user_state').select('data').eq('user_id',this.user.id).maybeSingle().then(({data,error})=>{if(error)throw error;if(data&&data.data)this.remote(data.data);if(SYNC.dirty)this.push()}).catch(()=>SYNC.status('err'));KAL.push(1)},
+  backOnline(){if(!this.user||!GATE.ok())return;if(!this.ch)return this.join();this.c.from('user_state').select('data').eq('user_id',this.user.id).maybeSingle().then(({data,error})=>{if(error)throw error;if(data&&data.data)this.remote(data.data);if(SYNC.dirty)this.push()}).catch(()=>SYNC.status('err'));KAL.push(1)},
   kalRow(r){if(!r||!r.user_id||r.user_id===(this.user&&this.user.id))return;KAL.take(r.user_id,{name:r.name,proj:r.proj,pct:r.pct,row:r.row_no,total:r.total,col:r.col,ts:Date.parse(r.updated_at)||Date.now()});KAL.paint()},
   async kalSend(m,on){if(!this.user)return;const key=on?JSON.stringify({...m,ts:0}):'off';if(key===this.kalLast)return;this.kalLast=key;
     const {error}=on?await this.c.from('kal').upsert({user_id:this.user.id,name:m.name,proj:m.proj.slice(0,40),pct:m.pct,row_no:m.row,total:m.total,col:/^#[0-9a-f]{6}$/i.test(m.col)?m.col:'#f4a6c6'})

@@ -22,13 +22,16 @@ Reine statische Seite für GitHub Pages, ohne Build-Schritt: Datei ändern, push
 | `js/garn.js` | Garnlager, Einkaufsliste, Hobbii-Farbwahl (`garne.json`) |
 | `js/3d.js` | Eigener kleiner WebGL-Renderer: 3D-Tab und Live-Ansicht |
 | `js/lernecke.js` | Lern-Ecke „Hilfe & Techniken“ mit Animationen |
+| `js/kreis.js` | Einladungscode: ohne Code öffnet sich das Maschenbuch nicht |
 | `js/knitalong.js` | Knit-Along-Balken der Freundinnen, grüner Punkt „strickt gerade“ |
 | `js/cloud.js` | Google-Anmeldung, Synchronisierung über Supabase, Konto abmelden/löschen |
 | `js/tausch.js` | Garn-Tauschbörse |
 | `js/ui.js` | Seitenaufbau (`render`), Menü, Startseite, Einstellungen, Dialoge, Rückgängig, Impressum |
 | `js/start.js` | Startet alles (wird als letzte Datei geladen) |
 | `sw.js` | Offline-Speicher: eigene Dateien Netz zuerst, sonst gespeichert |
-| `garne.json` | Hobbii-Katalog, wird monatlich automatisch aktualisiert (`tools/garne_aktualisieren.py`) |
+| `garne.json` | Hobbii-Katalog mit Preisen und Angeboten, täglich automatisch aktualisiert (`tools/garne_aktualisieren.py`) |
+| `supabase/migrations/` | Datenbank als Code: Tabellen, Regeln, Funktionen |
+| `supabase/tests/` | Datenbank-Tests (laufen in GitHub gegen ein echtes, frisches Supabase) |
 
 Alle Dateien teilen sich einen gemeinsamen Bereich (klassische `<script>`-Dateien, keine Module).
 **Neue JS-Datei?** In `index.html` und in der Liste `JS` in `sw.js` eintragen. Ein Test prüft, dass beide übereinstimmen.
@@ -38,18 +41,27 @@ Alle Dateien teilen sich einen gemeinsamen Bereich (klassische `<script>`-Dateie
 - Ohne Anmeldung bleibt alles im Browser (`localStorage`, Schlüssel `maschenbuch.v4`)
 - Mit Google-Anmeldung: Supabase (Projekt `maschenbuch`, Region Frankfurt)
 - Der Schlüssel in `js/cloud.js` ist der öffentliche Anon-Key; die Daten sind über Row Level Security geschützt
+- **Freundeskreis:** Nur wer den Einladungscode eingegeben hat (`kreis_mitglied`), sieht überhaupt etwas
   - `user_state`: nur die eigene Zeile
-  - `kal`: alle Angemeldeten lesen, jede schreibt nur ihren eigenen Balken
-  - `tausch`/`tausch_wunsch`: alle Angemeldeten lesen, jede ändert nur ihre eigenen Angebote und Wünsche
+  - `kal`: alle im Kreis lesen, jede schreibt nur ihren eigenen Balken
+  - `tausch`/`tausch_wunsch`: alle im Kreis lesen, jede ändert nur ihre eigenen Angebote und Wünsche
+- Der Code liegt nur als Hash in der Tabelle `kreis` (nicht im Repo). Ändern im Supabase SQL Editor:
+  `update public.kreis set code_hash = extensions.crypt(lower('NeuerCode'), extensions.gen_salt('bf'));`
+  Wer schon im Kreis ist, bleibt drin. 10 falsche Versuche pro IP → 15 Minuten Pause
 - Schreib-Bremse in der Datenbank: dieselbe Zeile höchstens alle 0,5 Sekunden ändern
 - `delete_my_account()` löscht nur das eigene Konto samt Cloud-Daten
-- `.github/workflows/keepalive.yml` hält das kostenlose Supabase-Projekt wach
+- `.github/workflows/keepalive.yml` (täglich) hält das kostenlose Supabase-Projekt wach und ruft `aufraeumen()` auf:
+  Knit-Along-Balken ohne Änderung seit 60 Tagen, Tauschangebote älter als 90 Tage, alte Code-Versuche
+  und Konten, die nach 7 Tagen immer noch nicht im Kreis sind, werden gelöscht
+- Neue Datenbank-Änderung: neue Datei in `supabase/migrations/` (Zeitstempel vorne), Test dazu in `supabase/tests/`
 
 ## Tests
 
 `tests/` enthält Browser-Tests mit Playwright. Supabase wird dabei durch einen Nachbau (`tests/mocksb.js`)
 ersetzt, es werden also keine echten Daten angefasst. Sie laufen bei jedem Push automatisch
 (Actions → „Automatische Tests“) und lassen sich dort auch per „Run workflow“ starten.
+
+Zwei Teile: „Website“ (Browser) und „Datenbank“ (`supabase start` mit allen Migrationen, dann `supabase/tests/run.sh`).
 
 Lokal: `python3 -m http.server 8765` im Ordner starten, dann `node tests/run.js`
 (nur eine Gruppe: `node tests/run.js tausch`, mit Zeitangaben: `ZEIT=1 node tests/run.js`).

@@ -18,7 +18,7 @@ window.supabase={createClient(){
     getSession:async()=>({data:{session}}),
     signInWithOAuth:async()=>{localStorage.setItem('mock.login','1');session={user:{id:uid,email}};setTimeout(()=>ls.forEach(f=>f('SIGNED_IN',session)),200);return{error:null}},
     signOut:async()=>{localStorage.removeItem('mock.login');session=null;ls.forEach(f=>f('SIGNED_OUT',null));return{error:null}}};
-  return{auth,from,rpc:name=>call('rpc',{name}),
+  return{auth,from,rpc:(name,args)=>call('rpc',{name,args:args||{}}),
     channel(name){const c={name,h:[],ps:{},on(type,f,fn){c.h.push({type,f,fn});return c},
       subscribe(cb){chans.push(c);if(cb)setTimeout(()=>cb('SUBSCRIBED'),0);if(name==='online')call('presenceSync',{});return c},
       track(){return call('track',{})},untrack(){return call('untrack',{})},presenceState(){return c.ps}};return c},

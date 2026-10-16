@@ -1,9 +1,9 @@
-# Holt monatlich den Hobbii-Katalog neu und berechnet die exakten Garnfarben aus den Produktfotos.
+# Holt täglich den Hobbii-Katalog (Preise, Angebote, Lieferbarkeit) und berechnet für neue Farben die exakte Farbe aus dem Foto.
 name: Garnliste aktualisieren
 
 on:
   schedule:
-    - cron: "43 3 1 * *"   # am 1. jedes Monats
+    - cron: "43 3 * * *"   # täglich 03:43 UTC
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -25,4 +25,5 @@ jobs:
           if git diff --quiet garne.json; then echo "Keine Änderungen"; exit 0; fi
           git config user.name "garnliste-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add garne.json && git commit -m "Garnliste aktualisiert" && git push
+          n=$(python3 -c "import json;print(json.load(open('garne.json')).get('angebote',0))")
+          git add garne.json && git commit -m "Garnliste aktualisiert ($n Angebote)" && git push

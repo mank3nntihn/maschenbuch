@@ -6,6 +6,8 @@ const PK={user_state:['user_id'],kal:['user_id'],tausch:['id'],tausch_wunsch:['t
 async function create(){
   const browser=await chromium.launch();const pages=[];const errors=[];
   const db={user_state:[],kal:[],tausch:[],tausch_wunsch:[]},gone=new Set(),online=new Set();let n=0;
+  // Einladungscode wie in der Datenbank: Groß-/Kleinschreibung egal, Mitglieder bleiben Mitglieder
+  const kreis={code:'testcode',mitglieder:new Set(),versuche:0};const codeOk=c=>String(c||'').trim().toLowerCase()===kreis.code;
   const strip=r=>{const{_ts,...x}=r;return x};
   const notify=(t,ev,row)=>pages.forEach(p=>p.evaluate(([t,ev,row])=>window.__onChange&&window.__onChange(t,ev,row),[t,ev,strip(row)]).catch(()=>{}));
   const presence=()=>pages.forEach(p=>p.evaluate(k=>window.__presence&&window.__presence(k),[...online]).catch(()=>{}));
@@ -16,7 +18,9 @@ async function create(){
     if(op==='track'){online.add(uid);presence();return{}}
     if(op==='untrack'){online.delete(uid);presence();return{}}
     if(op==='presenceSync'){setTimeout(presence,0);return{}}
-    if(op==='rpc'){if(a.name!=='delete_my_account')return{error:{message:'unbekannte Funktion'}};gone.add(uid);online.delete(uid);
+    if(op==='rpc'&&a.name==='kreis_code_pruefen'){if(kreis.versuche>=10)return{data:null,error:{message:'zu_viele_versuche'}};const ok=codeOk(a.args.code);if(!ok)kreis.versuche++;return{data:ok,error:null}}
+    if(op==='rpc'&&a.name==='kreis_beitreten'){if(kreis.mitglieder.has(uid))return{data:true,error:null};if(!codeOk(a.args.code))return{data:false,error:null};kreis.mitglieder.add(uid);return{data:true,error:null}}
+    if(op==='rpc'){if(a.name!=='delete_my_account')return{error:{message:'unbekannte Funktion'}};gone.add(uid);online.delete(uid);kreis.mitglieder.delete(uid);
       const mine=new Set(db.tausch.filter(r=>r.user_id===uid).map(r=>r.id));
       for(const k of Object.keys(db)){const old=db[k];db[k]=old.filter(r=>r.user_id!==uid&&!(k==='tausch_wunsch'&&mine.has(r.tausch_id)));old.filter(r=>!db[k].includes(r)).forEach(r=>notify(k,'DELETE',r))}
       presence();return{data:null,error:null}}
@@ -40,12 +44,12 @@ async function create(){
     await ctx.route('**/supabase.js',r=>r.fulfill({contentType:'text/javascript',body:MOCK}));
     await ctx.route(/hobbii|shopify|googleapis|gstatic/,r=>r.abort());
     const p=await ctx.newPage();p.on('pageerror',e=>errors.push(uid+': '+e.message));
-    await p.addInitScript(([u,e,login])=>{window.__uid=u;window.__email=e;if(login&&!sessionStorage.getItem('mock.init')){sessionStorage.setItem('mock.init','1');localStorage.setItem('mock.login','1')}},[uid,email,!!o.login]);
+    await p.addInitScript(([u,e,login,code])=>{window.__uid=u;window.__email=e;if(!sessionStorage.getItem('mock.init')){sessionStorage.setItem('mock.init','1');if(login)localStorage.setItem('mock.login','1');if(code)localStorage.setItem('mb.kreis',code)}},[uid,email,!!o.login,o.ohneCode?'':'testcode']);
     await p.exposeFunction('__sb',(op,a)=>handle(op,a));
     pages.push(p);p.ctx=ctx;
-    await p.goto(BASE+'index.html');await p.waitForFunction(()=>window.SB&&typeof render==='function');
+    await p.goto(BASE+'index.html');await p.waitForFunction(()=>window.SB&&typeof render==='function');if(o.ohneCode)return p;
     if(o.login)await p.waitForFunction(()=>SB.user,null,{timeout:5000});
     return p}
   async function until(p,fn,arg,ms=5000){try{await p.waitForFunction(fn,arg,{timeout:ms,polling:100});return true}catch(e){return false}}
-  return{browser,page,until,db,online,gone,errors,close:()=>browser.close()}}
+  return{browser,page,until,db,online,gone,kreis,errors,close:()=>browser.close()}}
 module.exports={create,BASE};

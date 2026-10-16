@@ -1,6 +1,7 @@
-# Hält das kostenlose Supabase-Projekt aktiv (pausiert sonst nach ~7 Tagen ohne Nutzung)
+# Täglicher Dienst: hält das kostenlose Supabase-Projekt aktiv (pausiert sonst nach ~7 Tagen ohne Nutzung),
+# räumt alte Daten auf (Funktion aufraeumen() in supabase/migrations)
 # und sorgt dafür, dass GitHub diesen geplanten Workflow nicht nach 60 Tagen Ruhe abschaltet.
-name: Keep-Alive
+name: Keep-Alive und Aufräumen
 
 on:
   schedule:
@@ -24,7 +25,17 @@ jobs:
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{}'
           echo
 
-      - uses: actions/checkout@v4
+      - name: Aufräumen (alte Knit-Along-Balken, alte Tauschangebote, fremde Konten ohne Code)
+        env:
+          SB_URL: https://nwrcohvrxxsccyllgfzl.supabase.co
+          SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53cmNvaHZyeHhzY2N5bGxnZnpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMzU2NzYsImV4cCI6MjEwNzcxMTY3Nn0.9uL7MnSKKFQ_9sm2FNGbXiuyXTf3V8wRITkBv07llHA
+        run: |
+          erg=$(curl -fsS --retry 3 --retry-delay 20 -X POST "$SB_URL/rest/v1/rpc/aufraeumen" \
+            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{}')
+          echo "Entfernt: $erg"
+          echo "### Aufräumen: $erg" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@v5
       - name: Repo alle 50 Tage kurz anstoßen
         run: |
           last=$(git log -1 --format=%ct)

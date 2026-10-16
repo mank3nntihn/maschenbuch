@@ -1,7 +1,7 @@
 """
 Aktualisiert garne.json aus dem öffentlichen Hobbii-Katalog (hobbii.de/products.json)
 und berechnet die exakte Farbe jeder Garnfarbe aus dem Produktfoto.
-Läuft als GitHub Action (monatlich oder per Hand), lokal: python tools/garne_aktualisieren.py
+Läuft als GitHub Action (täglich wegen der Angebote, oder per Hand), lokal: python tools/garne_aktualisieren.py
 """
 import json,re,sys,html,io,time,urllib.request,concurrent.futures as cf
 from PIL import Image
@@ -28,6 +28,12 @@ def hexof(name):
             if re.search(r'\b(dark|deep|dunkel)',n): h=DK(h,.35)
             return h
     return None
+def vorher(v):
+    """Ursprünglicher Preis, wenn die Farbe gerade reduziert ist (sonst None)."""
+    try:
+        alt,neu=float(v.get("compare_at_price") or 0),float(v["price"])
+        return alt if alt>neu else None
+    except (TypeError,ValueError): return None
 def textur(t,title):
     s=(t+' '+title).lower()
     if 'tweed' in s: return 'tweed'
@@ -53,8 +59,9 @@ def main(dst):
         if not d: break
         alle+= [p for p in d if p.get("product_type")=="yarn"];page+=1;time.sleep(.5)
     print(len(alle),"Garne geladen")
-    try: alt={f["sku"]:f.get("hex") for g in json.load(open(dst,encoding="utf-8"))["garne"] for f in g["farben"]}
-    except Exception: alt={}
+    try: vorige=json.load(open(dst,encoding="utf-8"))
+    except Exception: vorige={"garne":[]}
+    alt={f["sku"]:f.get("hex") for g in vorige["garne"] for f in g["farben"]}
     out=[]
     for p in alle:
         t=txt(p["body_html"])
@@ -65,7 +72,7 @@ def main(dst):
         g=re.search(r'(\d+)\s*g\b',t); gramm=int(g.group(1)) if g else None
         n=re.search(r'(?:Nadel(?:stärke|größe)?|Häkelnadel)[^0-9]{0,30}(\d+(?:[,.]\d+)?(?:\s*[-–]\s*\d+(?:[,.]\d+)?)?)\s*mm',t,re.I)
         mat=re.search(r'(\d{1,3}\s*%\s*[A-Za-zÄÖÜäöüß-]+(?:[ ,/]+\d{1,3}\s*%\s*[A-Za-zÄÖÜäöüß-]+)*)',t)
-        farben=[{"name":v["title"],"sku":v["sku"],"preis":float(v["price"]),"gewicht_g":v["grams"],"verfuegbar":v["available"],
+        farben=[{"name":v["title"],"sku":v["sku"],"preis":float(v["price"]),"vorher":vorher(v),"gewicht_g":v["grams"],"verfuegbar":v["available"],
                  "hex":None,"name_hex":hexof(v["title"]),"bild":(v.get("featured_image") or {}).get("src")} for v in p["variants"]]
         out.append({"id":p["id"],"name":p["title"],"marke":p["vendor"],"url":"https://hobbii.de/products/"+p["handle"],"lauflaenge_m":lauf,"knaeuel_g":gramm,
                     "nadel_mm":n.group(1).replace(" ","") if n else None,"material":mat.group(1) if mat else None,"textur":textur(t,p["title"]),"farben":farben})
@@ -82,7 +89,11 @@ def main(dst):
         del f["name_hex"]
     ok=sum(1 for f in alle_f if f["exakt"])
     print(f"{ok} von {len(alle_f)} Farben exakt aus dem Foto")
-    json.dump({"quelle":"hobbii.de","stand":time.strftime("%Y-%m-%d"),"garne":out},open(dst,"w",encoding="utf-8"),ensure_ascii=False,separators=(",",":"))
+    ang=sum(1 for f in alle_f if f["vorher"])
+    print(f"{ang} Farben gerade im Angebot")
+    if out==vorige.get("garne"):
+        print("Keine Änderung, garne.json bleibt wie sie ist");return
+    json.dump({"quelle":"hobbii.de","stand":time.strftime("%Y-%m-%d"),"angebote":ang,"garne":out},open(dst,"w",encoding="utf-8"),ensure_ascii=False,separators=(",",":"))
 
 if __name__=="__main__":
     main(sys.argv[1] if len(sys.argv)>1 else "garne.json")

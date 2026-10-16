@@ -1,0 +1,38 @@
+module.exports={name:'Hobbii-Angebote und Filter in der Farbwahl',async run(h,ok){
+  const fs=require('fs'),path=require('path');
+  const j=JSON.parse(fs.readFileSync(path.join(__dirname,'..','garne.json'),'utf8'));
+  const g=j.garne.find(x=>x.farben.length>=3);g.nadel_mm='4-5';g.farben.forEach(f=>{f.vorher=null;f.verfuegbar=true});
+  j.garne.forEach(x=>x.farben.forEach(f=>f.vorher=null));
+  g.farben[0].preis=6.5;g.farben[0].vorher=10;g.farben[1].verfuegbar=false;
+  const p=await h.page('u-anna','anna@x.de');
+  await p.ctx.route('**/garne.json',r=>r.fulfill({contentType:'application/json',body:JSON.stringify(j)}));
+  await p.evaluate(()=>{pickP(0);S.needle=4.5;DB.stash=[{n:'Rosa',c:'#f4a6c6',b:1,m:115,nd:3.5}];DB.shop=[];save();tab='stash';render()});
+  await p.locator('.yr .swb').first().click();await h.until(p,()=>document.querySelectorAll('#pkb .gi').length>10);
+  const chips=await p.locator('#pkf').innerText();
+  ok(/Im Angebot \(1\)/.test(chips)&&/Lieferbar/.test(chips)&&/Passt zu 4,5 mm/.test(chips),'Drei Filter: Im Angebot (mit Anzahl), Lieferbar, Passt zur Nadel');
+  await p.locator('#pkf .chip',{hasText:'Im Angebot'}).click();
+  ok(await p.locator('#pkb .gi').count()===1,'Filter „Im Angebot“ zeigt nur reduzierte Garne');
+  ok(/bis −35 %/.test(await p.locator('#pkb .gi').first().innerText()),'Garn zeigt den höchsten Rabatt (−35 %)');
+  await p.locator('#pkb .gi').first().click();
+  ok(await p.locator('#pkb .fc').count()===1,'Im Garn erscheinen nur die reduzierten Farben');
+  const fc=await p.locator('#pkb .fc').first().innerText();
+  ok(/−35 %/.test(fc)&&/10,00/.test(fc)&&/6,50/.test(fc),'Farbe zeigt Rabatt, alten und neuen Preis');
+  ok(await p.locator('#pkb s').count()===1,'Alter Preis ist durchgestrichen');
+  await p.locator('#pkb a',{hasText:'alle zeigen'}).click();
+  ok(await p.locator('#pkb .fc').count()===g.farben.length,'„alle zeigen“ hebt den Filter auf');
+  await p.evaluate(()=>{PK.garn=null;PK.f={sale:false,lief:false,nadel:false};PK.draw()});
+  const alle=await p.locator('#pkb .gi').count();await p.locator('#pkf .chip',{hasText:'Passt zu'}).click();
+  const nadel=await p.locator('#pkb .gi').count();
+  ok(nadel>0&&nadel<alle,'Filter „Passt zu 4,5 mm“ grenzt die Liste ein');
+  ok(await p.evaluate(gid=>[...document.querySelectorAll('#pkb .gi')].some(b=>b.getAttribute('onclick').includes(String(gid))),g.id),'Garn mit Nadel 4–5 mm ist dabei');
+  await p.evaluate(()=>PK.close());
+  // Einkaufsliste: reduziertes und ausverkauftes Garn
+  await p.evaluate(([g])=>{const nm=x=>`${g.name.replace(/\s*\(Limited Edition\)/i,'')} – ${x.name}`;
+    DB.shop=[{n:nm(g.farben[0]),c:'#fff',q:2,d:false,p:10,u:g.url,sku:g.farben[0].sku},{n:nm(g.farben[1]),c:'#fff',q:1,d:false,p:6.5,u:g.url},{n:'Eigene Wolle',c:'#fff',q:1,d:false}];save();tab='shop';render()},[g]);
+  ok(await h.until(p,()=>/reduziert/.test(document.querySelector('main').innerText)),'Einkaufsliste meldet: 1 Garn ist gerade reduziert');
+  const shop=await p.locator('main').innerText();
+  ok(/🏷️ −35 % · 6,50/.test(shop),'Reduziertes Garn zeigt Rabatt und aktuellen Preis');
+  ok(/13,00/.test(shop)&&!/20,00/.test(shop),'Preis und Summe rechnen mit dem aktuellen Angebotspreis');
+  ok(/gerade ausverkauft/.test(shop),'Ausverkauftes Garn wird markiert (Zuordnung über den Namen)');
+  await p.evaluate(()=>menu(1));ok(/Einkaufsliste \(3\) 🏷️/.test(await p.locator('#side').innerText()),'Menü zeigt 🏷️ bei der Einkaufsliste');
+}};

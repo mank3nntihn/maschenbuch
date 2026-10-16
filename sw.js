@@ -3,7 +3,7 @@
 // Garnliste & Supabase-Bibliothek: sofort aus dem Speicher, im Hintergrund aktualisieren.
 // Garnfotos: einmal geladen, offline verfügbar. Supabase-Anfragen werden nie zwischengespeichert.
 const V='maschenbuch-v2',IMG='maschenbuch-fotos',MAXIMG=1500;
-const JS=['texte','daten','anleitung','zaehler','fertig','projekt','garn','3d','lernecke','knitalong','cloud','tausch','ui','start'];
+const JS=['texte','daten','anleitung','zaehler','fertig','projekt','garn','3d','lernecke','knitalong','kreis','cloud','tausch','ui','start'];
 const CORE=['./','index.html','css/app.css',...JS.map(f=>`js/${f}.js`),'garne.json','manifest.json','icon-180.png','icon-192.png','icon-512.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(CORE.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>{})))));self.skipWaiting()});

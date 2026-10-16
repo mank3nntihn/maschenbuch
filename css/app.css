@@ -229,4 +229,16 @@ html[data-dark="1"] .fbox{background:#1b1722}
 .arch summary{list-style:none;cursor:pointer}.arch summary::-webkit-details-marker{display:none}.arch summary h2{display:inline;margin:0}
 .arch summary h2::after{content:' ▾';color:var(--mu);font-size:16px}.arch[open] summary{margin-bottom:6px}
 .tbr .an{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0}.tbr .an:focus-visible{outline:3px solid var(--ink)}
+.pk .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{min-height:36px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:600;background:var(--fld);color:var(--ink)}
+.chip.on{background:var(--ac);border-color:var(--ac);color:var(--on)}
+.rab{display:inline-block;background:#d93a5b;color:#fff;border-radius:6px;padding:1px 6px;font-size:12px;font-weight:700;vertical-align:1px}
+small.rab{margin-top:3px}
+.pk .fc{position:relative}.pk .fc .rab{position:absolute;top:8px;left:8px;z-index:1}
+.pk .fc s{color:var(--mu);font-weight:400}
+.rabh{margin:6px 0 4px;padding:10px 12px;border-radius:12px;background:rgba(217,58,91,.1);color:var(--ink);font-weight:600;font-size:15px}
+.gate .mb,.gate nav{display:none}
+.gatec{text-align:center;margin-top:8vh}.gatec .gi{font-size:48px;line-height:1}.gatec h2{margin:10px 0 6px}
+.gatec input{width:100%;margin-top:14px;text-align:center;font-size:18px;min-height:52px;border-radius:14px;border:1px solid var(--ln);background:var(--fld);color:var(--ink);padding:0 14px}
+.gatec .warn{margin:12px 0 0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}

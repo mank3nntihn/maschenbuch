@@ -77,40 +77,25 @@ grant execute on function public.ist_mitglied() to authenticated;
 grant execute on function public.kreis_code_pruefen(text) to anon, authenticated;
 grant execute on function public.kreis_beitreten(text) to authenticated;
 
--- ---------- Regeln: nur Mitglieder ----------
-drop policy if exists "eigener Stand lesen" on public.user_state;
-drop policy if exists "eigener Stand anlegen" on public.user_state;
-drop policy if exists "eigener Stand ändern" on public.user_state;
-drop policy if exists "eigener Stand löschen" on public.user_state;
-create policy "eigener Stand lesen"   on public.user_state for select to authenticated using ((select auth.uid()) = user_id and (select public.ist_mitglied()));
-create policy "eigener Stand anlegen" on public.user_state for insert to authenticated with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
-create policy "eigener Stand ändern"  on public.user_state for update to authenticated using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
-create policy "eigener Stand löschen" on public.user_state for delete to authenticated using ((select auth.uid()) = user_id);
+-- ---------- Regeln: nur Mitglieder (bestehende Regeln werden verschärft) ----------
+alter policy "eigener Stand lesen" on public.user_state using ((select auth.uid()) = user_id and (select public.ist_mitglied()));
+alter policy "eigener Stand anlegen" on public.user_state with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
+alter policy "eigener Stand ändern" on public.user_state using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
+alter policy "eigener Stand löschen" on public.user_state using ((select auth.uid()) = user_id);
 
-drop policy if exists "Knit-Along lesen" on public.kal;
-drop policy if exists "eigenen Balken anlegen" on public.kal;
-drop policy if exists "eigenen Balken ändern" on public.kal;
-drop policy if exists "eigenen Balken entfernen" on public.kal;
-create policy "Knit-Along lesen"         on public.kal for select to authenticated using ((select public.ist_mitglied()));
-create policy "eigenen Balken anlegen"   on public.kal for insert to authenticated with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
-create policy "eigenen Balken ändern"    on public.kal for update to authenticated using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
-create policy "eigenen Balken entfernen" on public.kal for delete to authenticated using ((select auth.uid()) = user_id);
+alter policy "Knit-Along lesen" on public.kal using ((select public.ist_mitglied()));
+alter policy "eigenen Balken anlegen" on public.kal with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
+alter policy "eigenen Balken ändern" on public.kal using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
+alter policy "eigenen Balken entfernen" on public.kal using ((select auth.uid()) = user_id);
 
-drop policy if exists "Tauschbörse lesen" on public.tausch;
-drop policy if exists "eigenes Angebot anlegen" on public.tausch;
-drop policy if exists "eigenes Angebot ändern" on public.tausch;
-drop policy if exists "eigenes Angebot löschen" on public.tausch;
-create policy "Tauschbörse lesen"       on public.tausch for select to authenticated using ((select public.ist_mitglied()));
-create policy "eigenes Angebot anlegen" on public.tausch for insert to authenticated with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
-create policy "eigenes Angebot ändern"  on public.tausch for update to authenticated using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
-create policy "eigenes Angebot löschen" on public.tausch for delete to authenticated using ((select auth.uid()) = user_id);
+alter policy "Tauschbörse lesen" on public.tausch using ((select public.ist_mitglied()));
+alter policy "eigenes Angebot anlegen" on public.tausch with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
+alter policy "eigenes Angebot ändern" on public.tausch using ((select auth.uid()) = user_id and (select public.ist_mitglied())) with check ((select auth.uid()) = user_id);
+alter policy "eigenes Angebot löschen" on public.tausch using ((select auth.uid()) = user_id);
 
-drop policy if exists "Wünsche lesen" on public.tausch_wunsch;
-drop policy if exists "eigenen Wunsch anlegen" on public.tausch_wunsch;
-drop policy if exists "eigenen Wunsch löschen" on public.tausch_wunsch;
-create policy "Wünsche lesen"          on public.tausch_wunsch for select to authenticated using ((select public.ist_mitglied()));
-create policy "eigenen Wunsch anlegen" on public.tausch_wunsch for insert to authenticated with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
-create policy "eigenen Wunsch löschen" on public.tausch_wunsch for delete to authenticated using ((select auth.uid()) = user_id);
+alter policy "Wünsche lesen" on public.tausch_wunsch using ((select public.ist_mitglied()));
+alter policy "eigenen Wunsch anlegen" on public.tausch_wunsch with check ((select auth.uid()) = user_id and (select public.ist_mitglied()));
+alter policy "eigenen Wunsch löschen" on public.tausch_wunsch using ((select auth.uid()) = user_id);
 
 -- ---------- Täglicher Aufräumdienst (GitHub Action, siehe .github/workflows/keepalive.yml) ----------
 -- Knit-Along-Balken ohne Änderung seit 60 Tagen, Tauschangebote älter als 90 Tage,
