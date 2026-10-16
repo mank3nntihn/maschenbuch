@@ -1425,6 +1425,8 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
   start(){if(this.ch){this.c.removeChannel(this.ch);this.ch=null}
     if(!this.user){SYNC.status('none');KAL.id=null;render();return}
     KAL.id=this.user.id;SYNC.st='busy';SYNC.status('busy');this.first=true;
+    // Prüfen, ob das Konto auf dem Server noch existiert (z. B. nach dem Löschen in Supabase)
+    if(navigator.onLine)this.c.auth.getUser().then(({data,error})=>{if(error&&error.status&&error.status<500||!error&&!data.user)this.gone()}).catch(()=>{});
     this.ch=this.c.channel('mb-'+this.user.id)
       .on('postgres_changes',{event:'*',schema:'public',table:'user_state',filter:'user_id=eq.'+this.user.id},p=>{if(p.new&&p.new.data)this.remote(p.new.data)})
       .on('postgres_changes',{event:'*',schema:'public',table:'kal'},p=>{if(p.eventType==='DELETE'){const id=p.old&&p.old.user_id;if(id){delete KAL.peers[id];delete KAL.cache[id];KAL.paint()}}else this.kalRow(p.new)})
@@ -1441,7 +1443,7 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
   touch(){clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),800)},
   async push(){if(!this.user)return;if(this.busy){this.touch();return}const j=JSON.stringify(DB);if(j===this.last){SYNC.clean();SYNC.status('ok');return}
     this.busy=true;SYNC.status('busy');
-    try{const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});if(error)throw error;this.last=j;SYNC.clean();SYNC.status('ok')}
+    try{const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});if(error&&(error.code==='23503'||error.code==='PGRST301'||error.status===401)){this.busy=false;return this.gone()}if(error)throw error;this.last=j;SYNC.clean();SYNC.status('ok')}
     catch(e){SYNC.status('err');clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),navigator.onLine?10000:60000)}
     finally{this.busy=false}},
   kalRow(r){if(!r||!r.user_id||r.user_id===(this.user&&this.user.id))return;KAL.take(r.user_id,{name:r.name,proj:r.proj,pct:r.pct,row:r.row_no,total:r.total,col:r.col,ts:Date.parse(r.updated_at)||Date.now()});KAL.paint()},
@@ -1451,6 +1453,10 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
   async login(){const de=DB.lang==='de',b=$('sbb');if(b)b.disabled=true;
     const {error}=await this.c.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
     if(error){if(b)b.disabled=false;ask((de?'Die Anmeldung hat nicht geklappt: ':'Sign-in failed: ')+error.message,{info:1})}},
+  async gone(){// Konto gibt es nicht mehr: lokal abmelden, Projekte bleiben auf dem Gerät
+    clearTimeout(this.timer);try{await this.c.auth.signOut({scope:'local'})}catch(e){}
+    this.user=null;this.last='';this.kalLast='';KAL.id=null;SYNC.status('none');tab='home';render();
+    toast(DB.lang==='de'?'Bitte neu anmelden':'Please sign in again')},
   async logout(){await this.c.auth.signOut();this.user=null;this.last='';this.kalLast='';SYNC.status('none');render()},
   card(){const de=DB.lang==='de';if(!this.c||this.user)return '';
     return `<section class="card"><h2>${de?'Anmelden':'Sign in'}</h2><p class="mu">${de?'Mit deinem Google-Konto sind deine Projekte auf allen Geräten gleich und du kannst beim Knit-Along mitmachen. Ohne Anmeldung bleibt alles nur in diesem Browser.':'Sign in with Google to sync your projects across devices and join the knit-along. Without signing in, everything stays in this browser.'}</p>
