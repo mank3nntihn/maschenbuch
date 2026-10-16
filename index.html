@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Maschenbuch">
 <meta name="theme-color" content="#f6a9c9">
 <title>Maschenbuch</title>
@@ -221,7 +226,6 @@ html[data-dark="1"] .dlg>form{background:#1b1722}
 <div id="pop" class="pop" hidden role="tooltip"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister())).catch(()=>{});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=id=>document.getElementById(id);
 const KEY='maschenbuch.v4';
@@ -1423,8 +1427,8 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
     this.c.from('user_state').select('data').eq('user_id',this.user.id).maybeSingle().then(({data,error})=>{
       if(error){SYNC.status('err');return}
       if(!data){this.first=false;this.push();return}
-      this.remote(data.data)});
-    this.c.from('kal').select('*').then(({data})=>{(data||[]).forEach(r=>this.kalRow(r))});
+      this.remote(data.data)}).catch(()=>SYNC.status('err'));
+    this.c.from('kal').select('*').then(({data})=>{(data||[]).forEach(r=>this.kalRow(r))}).catch(()=>{});
     KAL.push(1);render()},
   remote(r){if(!r||!Array.isArray(r.projects))return;const j=JSON.stringify(r);if(j===this.last){SYNC.status('ok');return}
     if(SYNC.dirty||this.first&&(DB.mod||0)>(r.mod||0)){SYNC.adopt(merge(DB,r));this.first=false;this.last=j;this.push()}
@@ -1432,9 +1436,9 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
   touch(){clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),800)},
   async push(){if(!this.user)return;if(this.busy){this.touch();return}const j=JSON.stringify(DB);if(j===this.last){SYNC.clean();SYNC.status('ok');return}
     this.busy=true;SYNC.status('busy');
-    const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});
-    if(error){SYNC.status('err');this.timer=setTimeout(()=>this.push(),10000)}else{this.last=j;SYNC.clean();SYNC.status('ok')}
-    this.busy=false},
+    try{const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});if(error)throw error;this.last=j;SYNC.clean();SYNC.status('ok')}
+    catch(e){SYNC.status('err');clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),navigator.onLine?10000:60000)}
+    finally{this.busy=false}},
   kalRow(r){if(!r||!r.user_id||r.user_id===(this.user&&this.user.id))return;KAL.take(r.user_id,{name:r.name,proj:r.proj,pct:r.pct,row:r.row_no,total:r.total,col:r.col,ts:Date.parse(r.updated_at)||Date.now()});KAL.paint()},
   async kalSend(m,on){if(!this.user)return;const key=on?JSON.stringify({...m,ts:0}):'off';if(key===this.kalLast)return;this.kalLast=key;
     if(on)await this.c.from('kal').upsert({user_id:this.user.id,name:m.name,proj:m.proj.slice(0,40),pct:m.pct,row_no:m.row,total:m.total,col:/^#[0-9a-f]{6}$/i.test(m.col)?m.col:'#f4a6c6'});
@@ -1460,6 +1464,13 @@ KAL.send=async function(){const m=this.mine(),on=DB.kalShare!==false&&!!m.name;t
 SB.init();
 const _kalHome=KAL.homeCard.bind(KAL);
 KAL.homeCard=function(){if(SB.c&&!SB.user){const de=DB.lang==='de';return `<section class="card"><h2>Knit-Along</h2><p class="mu">${de?'Melde dich oben an, dann kannst du mit einem Namen beim Knit-Along mitmachen.':'Sign in above to join the knit-along with a name.'}</p></section>`}return _kalHome()};
+
+// ===== App: Offline-Speicher und Nachholen nach Funkloch =====
+if('serviceWorker' in navigator&&isSecureContext)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+function backOnline(){if(!SB.user)return;SB.c.from('user_state').select('data').eq('user_id',SB.user.id).maybeSingle().then(({data,error})=>{if(error)throw error;if(data&&data.data)SB.remote(data.data);if(SYNC.dirty)SB.push()}).catch(()=>SYNC.status('err'));KAL.push(1)}
+addEventListener('online',backOnline);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&navigator.onLine&&SB.user&&SYNC.st==='err')backOnline()});
+addEventListener('offline',()=>{if(SB.user)SYNC.status('err')});
 
 render();
 </script>
