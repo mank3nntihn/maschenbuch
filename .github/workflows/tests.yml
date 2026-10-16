@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  website:
+    name: Website (Browser-Tests)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -33,3 +34,19 @@ jobs:
           name: test-screens
           path: test-screens/
           if-no-files-found: ignore
+
+  datenbank:
+    name: Datenbank (echtes Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Supabase starten und alle Migrationen einspielen
+        run: |
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector > start.log 2>&1 || { tail -25 start.log | sed 's/^/::error title=supabase start::/'; exit 1; }
+          tail -5 start.log
+      - name: Datenbank-Tests
+        run: supabase/tests/run.sh

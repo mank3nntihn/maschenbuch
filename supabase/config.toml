@@ -1,0 +1,16 @@
+# Nur für die automatischen Tests in GitHub (supabase start): lokales Supabase mit allen Migrationen.
+# Das echte Projekt läuft unter nwrcohvrxxsccyllgfzl.supabase.co.
+project_id = "maschenbuch"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "https://mank3nntihn.github.io/maschenbuch/"
