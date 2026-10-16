@@ -1,0 +1,35 @@
+name: Automatische Tests
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['.github/keepalive', 'garne.json', 'README.md']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Playwright mit Chromium installieren
+        run: |
+          npm install --no-save --no-package-lock playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Website lokal starten
+        run: |
+          python3 -m http.server 8765 >/dev/null 2>&1 &
+          sleep 1
+      - name: Tests ausführen
+        run: node tests/run.js
+      - name: Bildschirmfotos bei Fehlern hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screens
+          path: test-screens/
+          if-no-files-found: ignore

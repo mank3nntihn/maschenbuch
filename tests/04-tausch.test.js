@@ -1,0 +1,21 @@
+module.exports={name:'Garn-Tauschbörse',async run(h,ok){
+  const A=await h.page('u-anna','anna@x.de',{login:true}),L=await h.page('u-lea','lea@x.de',{login:true});
+  await A.fill('#kaln','Anna');await A.click('.kh button');await L.fill('#kaln','Lea');await L.click('.kh button');
+  await A.evaluate(()=>{DB.stash=[{n:'Cotton 8 – Mint',c:'#9fe0c9',b:2,m:85,nd:4}];save();tab='stash';render()});
+  await A.locator('.yr .give').first().click();ok(await A.locator('#dlgi').isVisible(),'🤝 fragt nach der Menge');
+  await A.fill('#dlgi','2 Knäuel');await A.click('#dlgy');
+  ok(await h.until(A,()=>!!document.querySelector('.yr .give.on')),'Garn ist im Lager als „wird abgegeben“ markiert');
+  ok(h.db.tausch.length===1&&h.db.tausch[0].name==='Anna'&&h.db.tausch[0].menge==='2 Knäuel','Angebot ist mit Name und Menge gespeichert');
+  await L.evaluate(()=>{tab='tausch';render()});
+  ok(await h.until(L,()=>/Cotton 8 – Mint/.test(document.querySelector('main').innerText)),'Lea sieht das Angebot live');
+  await L.locator('.tbr .want').first().click();
+  ok(await h.until(L,()=>!!document.querySelector('.tbr .want.on')),'„Hätte ich gern“ ist bei Lea markiert');
+  await A.evaluate(()=>{tab='tausch';render()});
+  ok(await h.until(A,()=>/Hätten gern: Lea/.test(document.querySelector('main').innerText)),'Anna sieht, dass Lea das Garn gern hätte');
+  await A.evaluate(()=>menu(1));ok(/Tauschbörse \(1\)/.test(await A.locator('#side').innerText()),'Menü zeigt die Anfrage als Zahl');await A.evaluate(()=>menu(0));
+  ok(await L.locator('.tbr .rm').count()===0,'Lea kann Annas Angebot nicht löschen');
+  await L.locator('.tbr .want').first().click();ok(await h.until(L,()=>!document.querySelector('.tbr .want.on')),'Wunsch lässt sich zurücknehmen');
+  await A.locator('.tbr .rm').first().click();await A.click('#dlgy');
+  ok(await h.until(L,()=>/niemand etwas an/.test(document.querySelector('main').innerText)),'Angebot zurückgezogen: verschwindet auch bei Lea');
+  ok(h.db.tausch.length===0,'Angebot ist aus der Datenbank entfernt');
+}};

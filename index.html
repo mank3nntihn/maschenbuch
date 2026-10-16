@@ -83,7 +83,7 @@ input[type=checkbox]{width:28px;height:28px;accent-color:var(--ac);flex:none}
 .sr{display:grid;grid-template-columns:48px 1fr 72px 44px;gap:8px;align-items:center;margin-bottom:8px}
 .sr.one{grid-template-columns:48px 1fr 44px}
 .sr button,.yr button{min-height:48px;padding:0}
-.yr{display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln)}
+.yr{display:grid;grid-template-columns:48px 1fr 48px 48px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln)}
 .yr:last-child{border:0}
 .yr .two{grid-column:1/-1;grid-template-columns:repeat(3,1fr);gap:8px}
 .yr .two label{margin:0 0 2px;font-size:13px}
@@ -217,6 +217,15 @@ html[data-dark="1"] .dlg>form{background:#1b1722}
 .imp{display:block;margin:28px auto 0;min-height:0;padding:6px 10px;border:0;background:none;font-size:13px;font-weight:500;color:var(--mu);text-decoration:underline}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin-top:12px;min-height:52px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;font-weight:600}
 html[data-dark="1"] .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
+.ghost.del{color:#b34a6e;border-color:#e9b7c8}
+.kal .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2fb457;margin-right:6px;vertical-align:1px;box-shadow:0 0 0 3px rgba(47,180,87,.2)}
+.yr button.give.on{background:var(--ac);border-color:var(--ac);color:var(--on)}
+.tbr{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln)}
+.tbr:last-of-type{border-bottom:0}
+.tbr .g{display:flex;flex-direction:column;min-width:0}.tbr .g b{overflow-wrap:anywhere}.tbr small{font-size:13px;margin-top:2px}
+.tbr .wl{color:var(--ink);font-weight:600}
+.tbr .want{min-height:44px;padding:0 14px;font-size:15px}.tbr .want.on{background:var(--ac);border-color:var(--ac);color:var(--on)}
+.tbr .rm{min-height:44px;width:44px;padding:0}
 .mail{user-select:all;-webkit-user-select:all;font-weight:600}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -478,7 +487,7 @@ function stripeList(){const one=S.stripes.length===1;return S.stripes.map((s,i)=
 function vStash(){
   const ndOpt=v=>NEEDLES.map(x=>`<option value="${x}" ${x===v?'selected':''}>${fmt(x)}</option>`).join('');
   return `<section class="card"><h2>${t('stash')}</h2><p class="mu">${t('stashNote')}</p>
-  ${DB.stash.length?DB.stash.map((y,i)=>`<div class="yr">${swb('y',i,y.c)}<input type="text" value="${esc(y.n)}" oninput="setY(${i},'n',this.value)" aria-label="${t('name')}"><button onclick="yToShop(${i})" aria-label="${t('shop')}">🛒</button>
+  ${DB.stash.length?DB.stash.map((y,i)=>`<div class="yr">${swb('y',i,y.c)}<input type="text" value="${esc(y.n)}" oninput="setY(${i},'n',this.value)" aria-label="${t('name')}"><button onclick="yToShop(${i})" aria-label="${t('shop')}">🛒</button>${TB.btn(i)}
     <div class="two"><div><label>${t('balls')}</label><input type="number" inputmode="decimal" min="0" step="0.5" value="${y.b}" oninput="setY(${i},'b',this.value)"></div><div><label>${t('m')}</label><input type="number" inputmode="numeric" min="1" value="${y.m}" oninput="setY(${i},'m',this.value)"></div><div><label>${t('nd')}</label><select onchange="setY(${i},'nd',this.value)">${ndOpt(y.nd)}</select></div></div>
     <button class="ghost" style="grid-column:1/-1;margin-top:0" onclick="DB.stash.splice(${i},1);save();render()">${t('del')}</button></div>`).join(''):`<p class="mu">${t('stashEmpty')}</p>`}
   <button class="pri" onclick="DB.stash.push({n:t('newColor'),c:'#c9b8ef',b:1,m:${S.mpb},nd:${S.needle}});save();render()">${t('addYarn')}</button></section>`;
@@ -522,7 +531,7 @@ function renderMenu(){
   <div class="three"><button onclick="newP()">+ ${t('newP')}</button><button onclick="renP()">${t('rename')}</button><button onclick="delP()">${t('del')}</button></div>
   ${L('home','🏠 '+(DB.lang==='de'?'Alle Projekte':'All projects'))}${L('count',t('tabsGo'))}
   <h2 style="margin-top:24px">Extras</h2>
-  ${L('stash','🧶 '+t('stash'))}${L('shop','🛒 '+t('shop')+(open?` (${open})`:''))}${L('help','🎓 '+(DB.lang==='de'?'Hilfe & Techniken':'Help & techniques'))}${L('gloss','📖 '+t('gloss'))}${L('settings','⚙️ '+t('settings'))}
+  ${L('stash','🧶 '+t('stash'))}${L('shop','🛒 '+t('shop')+(open?` (${open})`:''))}${L('tausch','🤝 '+(DB.lang==='de'?'Tauschbörse':'Yarn swap')+(TB.badge()?` (${TB.badge()})`:''))}${L('help','🎓 '+(DB.lang==='de'?'Hilfe & Techniken':'Help & techniques'))}${L('gloss','📖 '+t('gloss'))}${L('settings','⚙️ '+t('settings'))}
   ${SYNC.html()}
   <h2 style="margin-top:24px">${DB.lang==='de'?'Datensicherung':'Backup'}</h2>
   <div class="two" style="margin-top:8px"><button onclick="exportDB()">⬇️ Export</button><button onclick="$('impf').click()">⬆️ Import</button></div>
@@ -905,7 +914,7 @@ function render(){
   if(FOC.on){$('app').innerHTML=FOC.html();FOC.start();syncWake&&syncWake();return}
   const wide=tab==='count'&&DB.live;$('app').classList.toggle('wide',wide);document.querySelector('header').classList.toggle('wide',wide);
   stopHelp();
-  $('app').innerHTML={impressum:vImpressum,help:vHelp,home:vHome,count:vCount,steps:vSteps,wool:vWool,'3d':v3d,size:vSize,stash:vStash,shop:vShop,gloss:vGloss,settings:vSettings}[tab]();
+  $('app').innerHTML={impressum:vImpressum,tausch:vTausch,help:vHelp,home:vHome,count:vCount,steps:vSteps,wool:vWool,'3d':v3d,size:vSize,stash:vStash,shop:vShop,gloss:vGloss,settings:vSettings}[tab]();
   if(tab==='3d')V3.start();
   if(tab==='help')startHelp();
   syncWake();
@@ -1417,12 +1426,14 @@ KAL.init();
 
 // ===== GitHub-Pages-Version: Anmeldung, Synchronisierung und Knit-Along über Supabase =====
 var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53cmNvaHZyeHhzY2N5bGxnZnpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMzU2NzYsImV4cCI6MjEwNzcxMTY3Nn0.9uL7MnSKKFQ_9sm2FNGbXiuyXTf3V8wRITkBv07llHA',
-  c:null,user:null,timer:0,busy:false,last:'',first:true,sent:0,
+  c:null,user:null,timer:0,busy:false,last:'',first:true,sent:0,online:new Set(),tracked:false,
   init(){if(!window.supabase||!supabase.createClient)return;
     this.c=supabase.createClient(this.url,this.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     this.c.auth.onAuthStateChange((ev,s)=>{const u=s&&s.user||null;if((u&&u.id)===(this.user&&this.user.id))return;this.user=u;this.start()});
     this.c.auth.getSession().then(({data})=>{const u=data.session&&data.session.user||null;if(u&&(!this.user||this.user.id!==u.id)){this.user=u;this.start()}})},
-  start(){if(this.ch){this.c.removeChannel(this.ch);this.ch=null}
+  stop(){if(this.ch){this.c.removeChannel(this.ch);this.ch=null}if(this.pch){this.c.removeChannel(this.pch);this.pch=null}
+    this.online=new Set();this.tracked=false;TB.rows=[];TB.wish=[];TB.loaded=false},
+  start(){this.stop();
     if(!this.user){SYNC.status('none');KAL.id=null;render();return}
     KAL.id=this.user.id;SYNC.st='busy';SYNC.status('busy');this.first=true;
     // Prüfen, ob das Konto auf dem Server noch existiert (z. B. nach dem Löschen in Supabase)
@@ -1430,45 +1441,122 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
     this.ch=this.c.channel('mb-'+this.user.id)
       .on('postgres_changes',{event:'*',schema:'public',table:'user_state',filter:'user_id=eq.'+this.user.id},p=>{if(p.new&&p.new.data)this.remote(p.new.data)})
       .on('postgres_changes',{event:'*',schema:'public',table:'kal'},p=>{if(p.eventType==='DELETE'){const id=p.old&&p.old.user_id;if(id){delete KAL.peers[id];delete KAL.cache[id];KAL.paint()}}else this.kalRow(p.new)})
+      .on('postgres_changes',{event:'*',schema:'public',table:'tausch'},()=>TB.later())
+      .on('postgres_changes',{event:'*',schema:'public',table:'tausch_wunsch'},()=>TB.later())
       .subscribe();
+    // "Strickt gerade": wer die App offen im Zähler hat, bekommt einen grünen Punkt
+    this.pch=this.c.channel('online',{config:{presence:{key:this.user.id}}});
+    this.pch.on('presence',{event:'sync'},()=>{const st=this.pch?this.pch.presenceState():{};this.online=new Set(Object.keys(st));KAL.paint()})
+      .subscribe(s=>{if(s==='SUBSCRIBED'){this.tracked=null;this.presence()}});
     this.c.from('user_state').select('data').eq('user_id',this.user.id).maybeSingle().then(({data,error})=>{
       if(error){SYNC.status('err');return}
       if(!data){this.first=false;this.push();return}
       this.remote(data.data)}).catch(()=>SYNC.status('err'));
     this.c.from('kal').select('*').then(({data})=>{(data||[]).forEach(r=>this.kalRow(r))}).catch(()=>{});
-    KAL.push(1);render()},
+    TB.load();KAL.push(1);render()},
+  presence(){if(!this.pch||!this.user)return;
+    const on=!document.hidden&&(tab==='count'||FOC.on)&&DB.kalShare!==false&&!!(DB.kalName||'').trim();
+    if(on===this.tracked)return;this.tracked=on;
+    try{const r=on?this.pch.track({at:Date.now()}):this.pch.untrack();if(r&&r.catch)r.catch(()=>{this.tracked=null})}catch(e){this.tracked=null}},
   remote(r){if(!r||!Array.isArray(r.projects))return;const j=JSON.stringify(r);if(j===this.last){SYNC.status('ok');return}
     if(SYNC.dirty||this.first&&(DB.mod||0)>(r.mod||0)){SYNC.adopt(merge(DB,r));this.first=false;this.last=j;this.push()}
     else{SYNC.adopt(r);this.first=false;this.last=j;SYNC.clean();SYNC.status('ok')}},
   touch(){clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),800)},
+  slow(e){return !!e&&/zu_schnell/.test(e.message||'')},
   async push(){if(!this.user)return;if(this.busy){this.touch();return}const j=JSON.stringify(DB);if(j===this.last){SYNC.clean();SYNC.status('ok');return}
     this.busy=true;SYNC.status('busy');
-    try{const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});if(error&&(error.code==='23503'||error.code==='PGRST301'||error.status===401)){this.busy=false;return this.gone()}if(error)throw error;this.last=j;SYNC.clean();SYNC.status('ok')}
+    try{const {error}=await this.c.from('user_state').upsert({user_id:this.user.id,data:DB});
+      if(error&&(error.code==='23503'||error.code==='PGRST301'||error.status===401)){this.busy=false;return this.gone()}
+      if(this.slow(error)){clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),700);return}// Schreib-Bremse: kurz warten, dann nochmal
+      if(error)throw error;this.last=j;SYNC.clean();SYNC.status('ok')}
     catch(e){SYNC.status('err');clearTimeout(this.timer);this.timer=setTimeout(()=>this.push(),navigator.onLine?10000:60000)}
     finally{this.busy=false}},
   kalRow(r){if(!r||!r.user_id||r.user_id===(this.user&&this.user.id))return;KAL.take(r.user_id,{name:r.name,proj:r.proj,pct:r.pct,row:r.row_no,total:r.total,col:r.col,ts:Date.parse(r.updated_at)||Date.now()});KAL.paint()},
   async kalSend(m,on){if(!this.user)return;const key=on?JSON.stringify({...m,ts:0}):'off';if(key===this.kalLast)return;this.kalLast=key;
-    if(on)await this.c.from('kal').upsert({user_id:this.user.id,name:m.name,proj:m.proj.slice(0,40),pct:m.pct,row_no:m.row,total:m.total,col:/^#[0-9a-f]{6}$/i.test(m.col)?m.col:'#f4a6c6'});
-    else await this.c.from('kal').delete().eq('user_id',this.user.id)},
+    const {error}=on?await this.c.from('kal').upsert({user_id:this.user.id,name:m.name,proj:m.proj.slice(0,40),pct:m.pct,row_no:m.row,total:m.total,col:/^#[0-9a-f]{6}$/i.test(m.col)?m.col:'#f4a6c6'})
+      :await this.c.from('kal').delete().eq('user_id',this.user.id);
+    if(error){this.kalLast='';if(this.slow(error))KAL.push()}},
   async login(){const de=DB.lang==='de',b=$('sbb');if(b)b.disabled=true;
     const {error}=await this.c.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
     if(error){if(b)b.disabled=false;ask((de?'Die Anmeldung hat nicht geklappt: ':'Sign-in failed: ')+error.message,{info:1})}},
+  out(){clearTimeout(this.timer);this.stop();this.user=null;this.last='';this.kalLast='';KAL.id=null;SYNC.status('none');tab='home';render()},
   async gone(){// Konto gibt es nicht mehr: lokal abmelden, Projekte bleiben auf dem Gerät
-    clearTimeout(this.timer);try{await this.c.auth.signOut({scope:'local'})}catch(e){}
-    this.user=null;this.last='';this.kalLast='';KAL.id=null;SYNC.status('none');tab='home';render();
-    toast(DB.lang==='de'?'Bitte neu anmelden':'Please sign in again')},
-  async logout(){await this.c.auth.signOut();this.user=null;this.last='';this.kalLast='';SYNC.status('none');render()},
+    try{await this.c.auth.signOut({scope:'local'})}catch(e){}
+    this.out();toast(DB.lang==='de'?'Bitte neu anmelden':'Please sign in again')},
+  async logout(){try{await this.c.auth.signOut()}catch(e){try{await this.c.auth.signOut({scope:'local'})}catch(e2){}}this.out()},
+  async deleteMe(){const de=DB.lang==='de';
+    if(!await ask(de?'Konto wirklich löschen? Deine Daten in der Cloud (Projekte, Knit-Along und Tauschangebote) werden endgültig entfernt. Auf diesem Gerät bleiben deine Projekte erhalten.':'Really delete your account? Your cloud data (projects, knit-along and swap offers) will be removed for good. Your projects stay on this device.'))return;
+    if(!navigator.onLine)return ask(de?'Dafür brauchst du eine Internetverbindung.':'You need an internet connection for this.',{info:1});
+    const {error}=await this.c.rpc('delete_my_account');
+    if(error)return ask((de?'Das Löschen hat nicht geklappt: ':'Deleting failed: ')+error.message,{info:1});
+    try{await this.c.auth.signOut({scope:'local'})}catch(e){}
+    this.out();toast(de?'Konto gelöscht':'Account deleted')},
   card(){const de=DB.lang==='de';if(!this.c||this.user)return '';
     return `<section class="card"><h2>${de?'Anmelden':'Sign in'}</h2><p class="mu">${de?'Mit deinem Google-Konto sind deine Projekte auf allen Geräten gleich und du kannst beim Knit-Along mitmachen. Ohne Anmeldung bleibt alles nur in diesem Browser.':'Sign in with Google to sync your projects across devices and join the knit-along. Without signing in, everything stays in this browser.'}</p>
       <button class="gbtn" id="sbb" onclick="SB.login()"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg><span>${de?'Mit Google anmelden':'Sign in with Google'}</span></button></section>`},
   settings(){const de=DB.lang==='de';if(!this.c||!this.user)return '';
-    return `<section class="card"><h2>${de?'Konto':'Account'}</h2><p class="mu">${de?'Angemeldet als':'Signed in as'} <b>${esc(this.user.email||'')}</b></p><button class="ghost" onclick="SB.logout()">${de?'Abmelden':'Sign out'}</button></section>`}
+    return `<section class="card"><h2>${de?'Konto':'Account'}</h2><p class="mu">${de?'Angemeldet als':'Signed in as'} <b>${esc(this.user.email||'')}</b></p>
+      <button class="ghost" id="sbout" onclick="SB.logout()">${de?'Abmelden':'Sign out'}</button>
+      <button class="ghost del" id="sbdel" onclick="SB.deleteMe()">${de?'Konto löschen':'Delete account'}</button></section>`}
 };
+
+// ===== Garn-Tauschbörse =====
+var TB={rows:[],wish:[],loaded:false,err:false,t:0,
+  me(){return((DB.kalName||'').trim()||((SB.user&&SB.user.email)||'').split('@')[0]||'?').slice(0,24)},
+  load(){if(!SB.user)return;
+    Promise.all([SB.c.from('tausch').select('*').order('created_at',{ascending:false}),SB.c.from('tausch_wunsch').select('*')]).then(([a,b])=>{
+      if(a.error||b.error)throw a.error||b.error;this.rows=a.data||[];this.wish=b.data||[];this.loaded=true;this.err=false;
+      if(tab==='tausch'||tab==='stash')render();else if(menuOpen)renderMenu()}).catch(()=>{this.err=true;if(tab==='tausch')render()})},
+  later(){clearTimeout(this.t);this.t=setTimeout(()=>this.load(),300)},
+  mineFor(y){return SB.user&&this.rows.find(r=>r.user_id===SB.user.id&&r.garn===String(y.n).slice(0,80))},
+  wishesOn(id){return this.wish.filter(w=>w.tausch_id===id)},
+  myWish(id){return SB.user&&this.wish.some(w=>w.tausch_id===id&&w.user_id===SB.user.id)},
+  badge(){if(!SB.user)return 0;const mine=new Set(this.rows.filter(r=>r.user_id===SB.user.id).map(r=>r.id));return this.wish.filter(w=>mine.has(w.tausch_id)).length},
+  btn(i){const y=DB.stash[i],on=!!this.mineFor(y),de=DB.lang==='de';
+    return `<button class="give ${on?'on':''}" onclick="TB.toggle(${i})" aria-pressed="${on}" aria-label="${on?(de?'Wird abgegeben, tippen zum Zurückziehen':'Offered, tap to withdraw'):(de?'Gebe ich ab':'Give away')}" title="${on?(de?'In der Tauschbörse':'In the swap'):(de?'Gebe ich ab':'Give away')}">🤝</button>`},
+  async toggle(i){const de=DB.lang==='de',y=DB.stash[i];if(!y)return;
+    if(!SB.user)return ask(de?'Für die Tauschbörse melde dich bitte zuerst auf der Startseite an.':'Please sign in on the home page first to use the swap.',{info:1});
+    const ex=this.mineFor(y);
+    if(ex){if(!await ask(de?`„${y.n}“ aus der Tauschbörse nehmen?`:`Remove “${y.n}” from the swap?`))return;return this.remove(ex.id,true)}
+    const m=await ask(de?`„${y.n}“ in die Tauschbörse stellen. Wie viel gibst du ab?`:`Offer “${y.n}” in the swap. How much?`,{input:`${fmt(y.b)} ${de?'Knäuel':'balls'}`});if(m===null)return;
+    const {error}=await SB.c.from('tausch').insert({name:this.me(),garn:String(y.n).slice(0,80)||'Garn',col:/^#[0-9a-f]{6}$/i.test(y.c)?y.c:'#f4a6c6',menge:m.trim().slice(0,30)});
+    if(error)return ask(/zu_viele/.test(error.message||'')?(de?'Du hast schon 30 Angebote in der Tauschbörse.':'You already have 30 offers.'):(de?'Das hat gerade nicht geklappt. Bist du online?':'That did not work. Are you online?'),{info:1});
+    toast(de?'In der Tauschbörse':'Added to the swap');this.load()},
+  async remove(id,ok){const de=DB.lang==='de';if(!ok&&!await ask(de?'Angebot zurückziehen?':'Withdraw this offer?'))return;
+    const {error}=await SB.c.from('tausch').delete().eq('id',id);if(error)return ask(de?'Das hat gerade nicht geklappt. Bist du online?':'That did not work. Are you online?',{info:1});
+    this.rows=this.rows.filter(r=>r.id!==id);render();this.load()},
+  async wishToggle(id){const de=DB.lang==='de',on=this.myWish(id);
+    const {error}=on?await SB.c.from('tausch_wunsch').delete().eq('tausch_id',id).eq('user_id',SB.user.id):await SB.c.from('tausch_wunsch').insert({tausch_id:id,name:this.me()});
+    if(error)return ask(de?'Das hat gerade nicht geklappt. Bist du online?':'That did not work. Are you online?',{info:1});
+    if(on)this.wish=this.wish.filter(w=>!(w.tausch_id===id&&w.user_id===SB.user.id));else this.wish.push({tausch_id:id,user_id:SB.user.id,name:this.me()});render();this.load()},
+  view(){const de=DB.lang==='de';
+    const head=`<section class="card"><h2>${de?'Tauschbörse':'Yarn swap'}</h2><p class="mu">${de?'Garnreste, die du nicht mehr brauchst, gibst du im Garnlager mit 🤝 ab. Bei den Angeboten der anderen tippst du auf „Hätte ich gern“. Wer etwas abgibt, sieht hier, wer es gern hätte.':'Give away leftover yarn with 🤝 in your stash. Tap “I’d like it” on other offers. Whoever offers a yarn sees who would like it.'}</p>`;
+    if(!SB.c||!SB.user)return head+`<p class="warn">${de?'Melde dich auf der Startseite an, um mitzumachen.':'Sign in on the home page to join.'}</p></section>`;
+    const row=(r,right,sub)=>`<div class="tbr"><span class="sw" style="background:${esc(r.col)}"></span><span class="g"><b>${esc(r.garn)}</b><small class="mu">${sub}</small></span>${right}</div>`;
+    const mine=this.rows.filter(r=>r.user_id===SB.user.id),other=this.rows.filter(r=>r.user_id!==SB.user.id);
+    const err=this.err?`<p class="warn">${de?'Gerade keine Verbindung, die Liste ist vielleicht nicht aktuell.':'No connection right now, the list may be out of date.'}</p>`:'';
+    return head+err+`</section><section class="card"><h2>${de?'Angebote der anderen':'Offers from others'}</h2>${other.length?other.map(r=>{const on=this.myWish(r.id);
+        return row(r,`<button class="want ${on?'on':''}" aria-pressed="${on}" onclick="TB.wishToggle('${r.id}')">${on?(de?'✓ Gemerkt':'✓ Noted'):(de?'Hätte ich gern':'I’d like it')}</button>`,`${esc(r.name)}${r.menge?' · '+esc(r.menge):''}${r.notiz?' · '+esc(r.notiz):''}`)}).join('')
+      :`<p class="mu">${this.loaded?(de?'Im Moment bietet niemand etwas an.':'Nobody is offering anything right now.'):(de?'Lade …':'Loading …')}</p>`}</section>
+      <section class="card"><h2>${de?'Gebe ich ab':'I’m giving away'}</h2>${mine.length?mine.map(r=>{const w=this.wishesOn(r.id);
+        return row(r,`<button class="rm" onclick="TB.remove('${r.id}')" aria-label="${de?'Zurückziehen':'Withdraw'}">✕</button>`,`${r.menge?esc(r.menge)+' · ':''}${w.length?`<span class="wl">${de?'Hätten gern':'Wanted by'}: ${w.map(x=>esc(x.name)).join(', ')}</span>`:(de?'Noch keine Anfrage':'No requests yet')}`)}).join('')
+      :`<p class="mu">${de?'Du bietest gerade nichts an.':'You are not offering anything.'}</p>`}
+      <button class="ghost" onclick="tab='stash';render();scrollTo(0,0)">🧶 ${de?'Zum Garnlager':'Go to stash'}</button></section>`}
+};
+function vTausch(){return TB.view()}
+
 // Knit-Along und Sync-Anzeige auf Supabase umstellen
-KAL.send=async function(){const m=this.mine(),on=DB.kalShare!==false&&!!m.name;try{await SB.kalSend(m,on)}catch(e){}};
+KAL.send=async function(){const m=this.mine(),on=DB.kalShare!==false&&!!m.name;try{await SB.kalSend(m,on)}catch(e){}SB.presence()};
+KAL.list=function(){const all={...this.cache,...this.peers},now=Date.now();delete all[this.id];
+  return Object.entries(all).map(([id,p])=>({...p,id,live:SB.online.has(id)})).filter(p=>p.live||now-p.ts<30*864e5).sort((a,b)=>(b.live-a.live)||(b.ts-a.ts)).slice(0,4)};
+KAL.html=function(small){if(DB.kalShow===false)return '';const L=this.list();if(!L.length)return '';const de=DB.lang==='de',now=Date.now();
+  return L.map(p=>`<div class="kr ${!p.live&&now-p.ts>36e5?'idle':''}" title="${esc(p.proj)}"><b>${p.live?`<i class="dot" title="${de?'Strickt gerade':'Knitting now'}" aria-label="${de?'strickt gerade':'knitting now'}"></i>`:''}${esc(p.name)}${small?'':` · <span style="font-weight:400;color:var(--mu)">${esc(p.proj)}</span>`}</b><span>${p.pct} %</span><div class="kb"><i style="width:${p.pct}%;background:${esc(p.col)}"></i></div></div>`).join('')};
 SB.init();
 const _kalHome=KAL.homeCard.bind(KAL);
 KAL.homeCard=function(){if(SB.c&&!SB.user){const de=DB.lang==='de';return `<section class="card"><h2>Knit-Along</h2><p class="mu">${de?'Melde dich oben an, dann kannst du mit einem Namen beim Knit-Along mitmachen.':'Sign in above to join the knit-along with a name.'}</p></section>`}return _kalHome()};
+const _render=render;render=function(){_render();SB.presence()};
+document.addEventListener('visibilitychange',()=>SB.presence());
+addEventListener('pagehide',()=>{if(SB.pch&&SB.tracked){try{SB.pch.untrack()}catch(e){}}});
 
 // ===== App: Offline-Speicher und Nachholen nach Funkloch =====
 if('serviceWorker' in navigator&&isSecureContext)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
