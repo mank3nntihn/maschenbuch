@@ -214,6 +214,10 @@ html[data-dark="1"] .dlg>form{background:#1b1722}
 @media(min-width:900px){.kalf{width:150px}}
 @media(min-width:900px) and (min-aspect-ratio:4/3){.fz .tbw{align-self:flex-end;order:-1}}
 .kh{display:flex;gap:8px;margin-top:10px}.kh input{flex:1;min-width:0}.kh button{min-height:48px;padding:0 16px}
+.imp{display:block;margin:28px auto 0;min-height:0;padding:6px 10px;border:0;background:none;font-size:13px;font-weight:500;color:var(--mu);text-decoration:underline}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin-top:12px;min-height:52px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;font-weight:600}
+html[data-dark="1"] .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
+.mail{user-select:all;-webkit-user-select:all;font-weight:600}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -523,7 +527,8 @@ function renderMenu(){
   <h2 style="margin-top:24px">${DB.lang==='de'?'Datensicherung':'Backup'}</h2>
   <div class="two" style="margin-top:8px"><button onclick="exportDB()">⬇️ Export</button><button onclick="$('impf').click()">⬆️ Import</button></div>
   <input type="file" id="impf" accept=".json,application/json" hidden onchange="importDB(this)">
-  <p class="mu sm">${DB.lang==='de'?'Speichert alle Projekte, Garnlager, Einkaufsliste und Einstellungen in eine Datei.':'Saves all projects, stash, shopping list and settings to a file.'}</p>`;
+  <p class="mu sm">${DB.lang==='de'?'Speichert alle Projekte, Garnlager, Einkaufsliste und Einstellungen in eine Datei.':'Saves all projects, stash, shopping list and settings to a file.'}</p>
+  <button class="imp" onclick="tab='impressum';menu(0);render();scrollTo(0,0)">Impressum</button>`;
 }
 function pickP(i){DB.cur=+i;S=DB.projects[DB.cur];save();KAL.push();tab='count';menu(0);render()}
 async function newP(){const def=tplDef(newTpl),n=await ask(t('nameQ'),{input:def.name});if(n===null)return;const p=clone(def);p.id=rid();p.name=n.trim()||def.name;DB.projects.push(p);pickP(DB.projects.length-1)}
@@ -900,7 +905,7 @@ function render(){
   if(FOC.on){$('app').innerHTML=FOC.html();FOC.start();syncWake&&syncWake();return}
   const wide=tab==='count'&&DB.live;$('app').classList.toggle('wide',wide);document.querySelector('header').classList.toggle('wide',wide);
   stopHelp();
-  $('app').innerHTML={help:vHelp,home:vHome,count:vCount,steps:vSteps,wool:vWool,'3d':v3d,size:vSize,stash:vStash,shop:vShop,gloss:vGloss,settings:vSettings}[tab]();
+  $('app').innerHTML={impressum:vImpressum,help:vHelp,home:vHome,count:vCount,steps:vSteps,wool:vWool,'3d':v3d,size:vSize,stash:vStash,shop:vShop,gloss:vGloss,settings:vSettings}[tab]();
   if(tab==='3d')V3.start();
   if(tab==='help')startHelp();
   syncWake();
@@ -1443,19 +1448,13 @@ var SB={url:'https://nwrcohvrxxsccyllgfzl.supabase.co',key:'eyJhbGciOiJIUzI1NiIs
   async kalSend(m,on){if(!this.user)return;const key=on?JSON.stringify({...m,ts:0}):'off';if(key===this.kalLast)return;this.kalLast=key;
     if(on)await this.c.from('kal').upsert({user_id:this.user.id,name:m.name,proj:m.proj.slice(0,40),pct:m.pct,row_no:m.row,total:m.total,col:/^#[0-9a-f]{6}$/i.test(m.col)?m.col:'#f4a6c6'});
     else await this.c.from('kal').delete().eq('user_id',this.user.id)},
-  async login(){const de=DB.lang==='de',e=($('sbm').value||'').trim();if(!/^\S+@\S+\.\S+$/.test(e)){toast(de?'Bitte eine gültige E-Mail-Adresse eingeben':'Please enter a valid email');return}
-    const b=$('sbb');b.disabled=true;
-    const {error}=await this.c.auth.signInWithOtp({email:e,options:{emailRedirectTo:location.origin+location.pathname}});
-    b.disabled=false;
-    if(error){ask((de?'Das hat nicht geklappt: ':'That did not work: ')+error.message,{info:1});return}
-    this.sentTo=e;render()},
+  async login(){const de=DB.lang==='de',b=$('sbb');if(b)b.disabled=true;
+    const {error}=await this.c.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+    if(error){if(b)b.disabled=false;ask((de?'Die Anmeldung hat nicht geklappt: ':'Sign-in failed: ')+error.message,{info:1})}},
   async logout(){await this.c.auth.signOut();this.user=null;this.last='';this.kalLast='';SYNC.status('none');render()},
-  card(){const de=DB.lang==='de';if(!this.c)return '';
-    if(this.user)return '';
-    if(this.sentTo)return `<section class="card"><h2>${de?'Schau in dein Postfach':'Check your inbox'}</h2><p class="mu">${de?`Wir haben einen Anmelde-Link an <b>${esc(this.sentTo)}</b> geschickt. Tippe ihn auf diesem Gerät an, dann bist du angemeldet.`:`We sent a sign-in link to <b>${esc(this.sentTo)}</b>. Open it on this device to sign in.`}</p><button class="ghost" onclick="SB.sentTo='';render()">${de?'Andere Adresse':'Use another address'}</button></section>`;
-    return `<section class="card"><h2>${de?'Anmelden':'Sign in'}</h2><p class="mu">${de?'Mit deiner E-Mail-Adresse sind deine Projekte auf allen Geräten gleich und du kannst beim Knit-Along mitmachen. Ohne Anmeldung bleibt alles nur in diesem Browser.':'Sign in to sync your projects across devices and join the knit-along. Without signing in, everything stays in this browser.'}</p>
-      <div class="kh"><input type="email" id="sbm" autocomplete="email" inputmode="email" placeholder="${de?'deine@email.de':'you@example.com'}" aria-label="E-Mail" onkeydown="if(event.key==='Enter')SB.login()"><button id="sbb" onclick="SB.login()">${de?'Link senden':'Send link'}</button></div>
-      <p class="mu sm">${de?'Kein Passwort nötig: Du bekommst einen Link per E-Mail.':'No password needed: you get a link by email.'}</p></section>`},
+  card(){const de=DB.lang==='de';if(!this.c||this.user)return '';
+    return `<section class="card"><h2>${de?'Anmelden':'Sign in'}</h2><p class="mu">${de?'Mit deinem Google-Konto sind deine Projekte auf allen Geräten gleich und du kannst beim Knit-Along mitmachen. Ohne Anmeldung bleibt alles nur in diesem Browser.':'Sign in with Google to sync your projects across devices and join the knit-along. Without signing in, everything stays in this browser.'}</p>
+      <button class="gbtn" id="sbb" onclick="SB.login()"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg><span>${de?'Mit Google anmelden':'Sign in with Google'}</span></button></section>`},
   settings(){const de=DB.lang==='de';if(!this.c||!this.user)return '';
     return `<section class="card"><h2>${de?'Konto':'Account'}</h2><p class="mu">${de?'Angemeldet als':'Signed in as'} <b>${esc(this.user.email||'')}</b></p><button class="ghost" onclick="SB.logout()">${de?'Abmelden':'Sign out'}</button></section>`}
 };
@@ -1471,6 +1470,14 @@ function backOnline(){if(!SB.user)return;SB.c.from('user_state').select('data').
 addEventListener('online',backOnline);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&navigator.onLine&&SB.user&&SYNC.st==='err')backOnline()});
 addEventListener('offline',()=>{if(SB.user)SYNC.status('err')});
+
+// ===== Impressum =====
+function vImpressum(){const de=DB.lang==='de',m='robs0108@web.de';
+  return `<section class="card"><h2>Impressum</h2>
+  <p>${de?'Das Maschenbuch ist ein rein privates Hobbyprojekt. Es wird nicht gewerblich genutzt, es gibt keine Werbung, keine Verkäufe und keine Bezahlfunktionen.':'Maschenbuch is a purely private hobby project. It is not used commercially: no ads, no sales and no payments.'}</p>
+  <p>${de?'Bei Fragen oder Anliegen meldet euch bitte per E-Mail:':'For questions, please get in touch by email:'}<br><a class="mail" href="mailto:${m}">${m}</a></p>
+  <p class="mu sm">${de?'Garndaten und Fotos stammen aus dem öffentlichen Katalog von hobbii.de und dienen nur der privaten Planung. Anleitungen gehören ihren Urheberinnen und werden nicht weitergegeben.':'Yarn data and photos come from the public hobbii.de catalogue and are used for private planning only. Patterns belong to their authors and are not shared.'}</p>
+  <button class="ghost" onclick="tab='home';render();scrollTo(0,0)">${de?'Zurück':'Back'}</button></section>`}
 
 render();
 </script>
