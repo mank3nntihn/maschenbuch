@@ -227,6 +227,23 @@ html[data-dark="1"] .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
 .tbr .want{min-height:44px;padding:0 14px;font-size:15px}.tbr .want.on{background:var(--ac);border-color:var(--ac);color:var(--on)}
 .tbr .rm{min-height:44px;width:44px;padding:0}
 .mail{user-select:all;-webkit-user-select:all;font-weight:600}
+.tmx{margin:6px 0 0;color:var(--mu);font-size:15px;line-height:1.45}.tmx b{color:var(--ink);font-weight:600}
+.undo{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:14px;max-width:calc(100% - 32px);background:#2d2540;color:#fff;padding:6px 6px 6px 18px;border-radius:999px;font-size:15px;z-index:96;box-shadow:0 8px 24px rgba(40,30,70,.3)}
+.undo[hidden]{display:none}.undo span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.undo button{min-height:40px;padding:0 16px;border-radius:999px;border:0;background:var(--ac);color:var(--on);flex:none}
+body.focus .undo{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.finx{position:fixed;inset:0;z-index:95;background:rgba(40,30,60,.42);display:flex;align-items:center;justify-content:center;padding:16px}
+.finx[hidden]{display:none}.finx canvas{position:fixed;inset:0;pointer-events:none}
+.fbox{position:relative;background:#fff;color:var(--ink);width:min(400px,100%);max-height:calc(100dvh - 32px);overflow:auto;border-radius:24px;padding:22px 18px 14px;box-shadow:0 16px 40px rgba(40,30,70,.3);text-align:center}
+html[data-dark="1"] .fbox{background:#1b1722}
+.fbox .fi{font-size:44px;line-height:1}.fbox h2{margin:6px 0 2px;font-size:28px}.fbox .fn{margin:0 0 14px;color:var(--mu);font-weight:600}
+.fs{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.fs div{flex:1 1 90px;background:var(--fld);border:1px solid var(--ln);border-radius:14px;padding:10px 6px}
+.fs b{display:block;font-size:17px}.fs span{font-size:13px;color:var(--mu)}
+.fy{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;text-align:left;padding:6px 0;font-size:15px}
+#finu .mu{text-align:left;margin:4px 0}
+.arch summary{list-style:none;cursor:pointer}.arch summary::-webkit-details-marker{display:none}.arch summary h2{display:inline;margin:0}
+.arch summary h2::after{content:' ▾';color:var(--mu);font-size:16px}.arch[open] summary{margin-bottom:6px}
+.tbr .an{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0}.tbr .an:focus-visible{outline:3px solid var(--ink)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -371,13 +388,13 @@ function countCard(){
     <p class="mu">${t('rowOf')(S.row,c.total,Math.round(S.row/c.total*c.len),c.len)} <button class="jb" onclick="jumpOpen()">${DB.lang==='de'?'Reihe eingeben':'Enter row'}</button></p>
     <form class="jump" id="jump" hidden onsubmit="event.preventDefault();jumpGo()"><input type="number" id="jr" inputmode="numeric" pattern="[0-9]*" placeholder="0 – ${c.total}" aria-label="${DB.lang==='de'?'Reihe':'Row'}"><button type="submit">${DB.lang==='de'?'Los':'Go'}</button><button type="button" onclick="$('jump').hidden=true" aria-label="${t('close')}">✕</button></form>
     ${S.stripes.length>1||done?`<div class="cur"><span class="sw" style="background:${esc(cur.s.c)}"></span><span>${done?t('finished'):t('nowCol')(esc(cur.s.n),cur.b-S.row)}</span></div>`:''}
-    ${agoHtml(S)}
+    ${agoHtml(S)}${TIME.html(S,c)}${done?`<button class="livebtn" onclick="FIN.show(S.id)">🎉 ${DB.lang==='de'?'Fertig-Übersicht':'Finish summary'}</button>`:''}
     ${alertHtml(c)}
     ${ins}
     <div class="pad"><button onclick="go(-1)" aria-label="${t('back')}">−1</button><button class="plus" onclick="go(1)">${t('rowDone')}</button></div>
     <button class="fbtn" onclick="FOC.open()">⛶ ${DB.lang==='de'?'Großer Zähler (Vollbild)':'Big counter (full screen)'}</button>
     <button class="livebtn" aria-expanded="${DB.live}" onclick="toggleLive()"><span>${DB.live?t('liveHide'):t('liveShow')}</span><span class="ar">▾</span></button>
-    <button class="ghost" onclick="ask(t('resetQ')).then(ok=>{if(ok){S.row=0;save();updCount()}})">${t('reset')}</button>
+    <button class="ghost" onclick="resetRow()">${t('reset')}</button>
     <div class="kal" id="kalc">${KAL.html()}</div>
   </section>`;
 }
@@ -461,7 +478,7 @@ function vSize(){
   <p class="mu sm">${sop?t('needleNoteS'):t('needleNote')}</p>`;
   const colors=`<section class="card"><h2>${t('stripes')}</h2><p class="mu">${sop?t('stripesNoteS'):t('stripesNote')}</p><div id="sl">${stripeList()}</div>
   <button class="ghost" onclick="S.stripes.push({n:t('newColor'),c:'#c9b8ef',r:${sop?40:12}});save();render()">${t('addStripe')}</button>
-  <button class="ghost" onclick="ask(t('resetAllQ')).then(ok=>{if(ok){const nm=S.name;Object.assign(S,clone(S.tpl==='sophie'?DEFS:DEFST),{name:nm});save();render()}})">${t('resetAll')}</button></section>`;
+  <button class="ghost" onclick="ask(t('resetAllQ')).then(ok=>{if(ok){UNDO.snapP();const nm=S.name;Object.assign(S,clone(S.tpl==='sophie'?DEFS:DEFST),{name:nm});save();render()}})">${t('resetAll')}</button></section>`;
   if(S.tpl==='weekend'){const de=DB.lang==='de',z=WZ[S.size]||WZ.big;
     return `<section class="card"><h2>${t('size')}</h2>
     <div class="seg" style="margin-top:10px"><button class="${S.size==='big'?'on':''}" onclick="setWSize('big')">${de?'Groß (Erwachsene)':'Big (adults)'}</button><button class="${S.size==='little'?'on':''}" onclick="setWSize('little')">${de?'Klein (Kinder)':'Little (kids)'}</button></div>
@@ -470,7 +487,7 @@ function vSize(){
     ${needle}<label>${t('mpb')}</label><input type="number" inputmode="decimal" min="10" value="${S.mpb}" oninput="setN('mpb',this.value)"></section>
     <section class="card"><h2>${t('stripes')}</h2><p class="mu">${de?'Farbe A beginnt, Farbe B endet jeden Teil. Erst dünne Streifen (2 Reihen), dann dicke Streifen (6 Reihen).':'Colour A starts, colour B ends each half. Skinny stripes (2 rows) first, then chunky stripes (6 rows).'}</p>
     ${S.stripes.slice(0,2).map((x,i)=>`<div class="sr one">${swb('s',i,x.c)}<input type="text" id="sn${i}" value="${esc(x.n)}" oninput="setS(${i},'n',this.value)" aria-label="${t('name')}"><b style="text-align:center">${i?'B':'A'}</b></div>`).join('')}
-    <button class="ghost" onclick="ask(t('resetAllQ')).then(ok=>{if(ok){const nm=S.name;Object.assign(S,clone(DEFW),{name:nm,id:S.id});save();render()}})">${t('resetAll')}</button></section>`}
+    <button class="ghost" onclick="ask(t('resetAllQ')).then(ok=>{if(ok){UNDO.snapP();const nm=S.name;Object.assign(S,clone(DEFW),{name:nm,id:S.id});save();render()}})">${t('resetAll')}</button></section>`}
   if(sop)return `<section class="card"><h2>${t('size')}</h2>
   <div class="seg" style="margin-top:10px"><button class="${S.size==='s'?'on':''}" onclick="setSize('s')">${t('small')}</button><button class="${S.size==='l'?'on':''}" onclick="setSize('l')">${t('large')}</button></div>
   <p class="mu">${t('sizeInfo')(SZ[S.size])}</p>
@@ -489,7 +506,7 @@ function vStash(){
   return `<section class="card"><h2>${t('stash')}</h2><p class="mu">${t('stashNote')}</p>
   ${DB.stash.length?DB.stash.map((y,i)=>`<div class="yr">${swb('y',i,y.c)}<input type="text" value="${esc(y.n)}" oninput="setY(${i},'n',this.value)" aria-label="${t('name')}"><button onclick="yToShop(${i})" aria-label="${t('shop')}">🛒</button>${TB.btn(i)}
     <div class="two"><div><label>${t('balls')}</label><input type="number" inputmode="decimal" min="0" step="0.5" value="${y.b}" oninput="setY(${i},'b',this.value)"></div><div><label>${t('m')}</label><input type="number" inputmode="numeric" min="1" value="${y.m}" oninput="setY(${i},'m',this.value)"></div><div><label>${t('nd')}</label><select onchange="setY(${i},'nd',this.value)">${ndOpt(y.nd)}</select></div></div>
-    <button class="ghost" style="grid-column:1/-1;margin-top:0" onclick="DB.stash.splice(${i},1);save();render()">${t('del')}</button></div>`).join(''):`<p class="mu">${t('stashEmpty')}</p>`}
+    <button class="ghost" style="grid-column:1/-1;margin-top:0" onclick="delY(${i})">${t('del')}</button></div>`).join(''):`<p class="mu">${t('stashEmpty')}</p>`}
   <button class="pri" onclick="DB.stash.push({n:t('newColor'),c:'#c9b8ef',b:1,m:${S.mpb},nd:${S.needle}});save();render()">${t('addYarn')}</button></section>`;
 }
 function setY(i,k,v){const y=DB.stash[i];y[k]=k==='b'?Math.max(0,parseFloat(v)||0):k==='m'?Math.max(1,parseFloat(v)||1):k==='nd'?parseFloat(v):v;if(k==='m'&&y.u){DB.mpbMem=DB.mpbMem||{};DB.mpbMem[y.u]=y.m}save()}
@@ -499,7 +516,7 @@ function vShop(){
   const any=DB.shop.some(i=>i.d);
   return `<section class="card"><h2>${t('shop')}</h2>
   ${DB.shop.length?DB.shop.map((s,i)=>`<div class="row"><input type="checkbox" ${s.d?'checked':''} onchange="DB.shop[${i}].d=this.checked;save();render()" aria-label="${esc(s.n)}"><span class="sw" style="background:${esc(s.c)}"></span><span class="g" style="${s.d?'text-decoration:line-through;color:var(--mu)':''}">${esc(s.n)}</span><span class="v">${s.q} ${t('balls')}${s.p?`<br><small class="mu">${eur(s.p*s.q)}</small>`:''}</span>${s.u?`<a class="lk" href="${esc(s.u)}" target="_blank" rel="noopener" aria-label="Hobbii">↗</a>`:''}</div>`).join('')+(DB.shop.some(s=>s.p&&!s.d)?`<p class="mu" style="text-align:right">${DB.lang==='de'?'Summe Hobbii-Garne':'Total Hobbii yarn'}: <b>${eur(DB.shop.filter(s=>s.p&&!s.d).reduce((a,s)=>a+s.p*s.q,0))}</b></p>`:''):`<p class="mu">${t('shopEmpty')}</p>`}
-  ${any?`<button class="pri" onclick="boughtToStash()">${t('boughtToStash')}</button><button class="ghost" onclick="DB.shop=DB.shop.filter(i=>!i.d);save();render()">${t('clearDone')}</button>`:''}</section>
+  ${any?`<button class="pri" onclick="boughtToStash()">${t('boughtToStash')}</button><button class="ghost" onclick="clearShop()">${t('clearDone')}</button>`:''}</section>
   <section class="card"><div class="sr" style="grid-template-columns:48px 1fr 72px">${swb('n',0,NEWSHOP.c)}<input type="text" id="nn" placeholder="${t('what')}"><input type="number" id="nq" inputmode="numeric" min="1" value="1" aria-label="${t('qty')}"></div>
   <button class="pri" onclick="addShop()">${t('addItem')}</button></section>`;
 }
@@ -526,7 +543,7 @@ function renderMenu(){
   const open=DB.shop.filter(i=>!i.d).length;
   $('side').innerHTML=`<button class="x" onclick="menu(0)" aria-label="${t('close')}">✕</button>
   <h2>${t('project')}</h2>
-  <select onchange="pickP(this.value)" aria-label="${t('project')}">${DB.projects.map((p,i)=>`<option value="${i}" ${i===DB.cur?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+  <select onchange="pickP(this.value)" aria-label="${t('project')}">${DB.projects.map((p,i)=>p.arch&&i!==DB.cur?'':`<option value="${i}" ${i===DB.cur?'selected':''}>${esc(p.name)}${p.arch?' ✓':''}</option>`).join('')}</select>
   <label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
   <div class="three"><button onclick="newP()">+ ${t('newP')}</button><button onclick="renP()">${t('rename')}</button><button onclick="delP()">${t('del')}</button></div>
   ${L('home','🏠 '+(DB.lang==='de'?'Alle Projekte':'All projects'))}${L('count',t('tabsGo'))}
@@ -1088,11 +1105,11 @@ setInterval(()=>document.querySelectorAll('.agot').forEach(e=>e.textContent=agoT
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.querySelectorAll('.agot').forEach(e=>e.textContent=agoTxt(+e.dataset.t))});
 // ===== Startseite: alle Projekte =====
 function vHome(){const de=DB.lang==='de',keep=S;
-  const cards=DB.projects.map((p,i)=>{S=p;const c=calc();S=keep;const pc=Math.round(p.row/c.total*100),fin=p.row>=c.total,a=agoTxt(p.last);
+  const cards=DB.projects.map((p,i)=>{if(p.arch)return '';S=p;const c=calc();S=keep;const pc=Math.round(p.row/c.total*100),fin=p.row>=c.total,a=agoTxt(p.last);
     return `<button class="pc ${i===DB.cur?'on':''} ${fin?'fin':''}" onclick="pickP(${i})"><h3>${esc(p.name)}<span>${pc} %</span></h3>
       <div class="bar">${c.segs.map(g=>`<i style="flex:${g.n};background:${esc(g.s.c)}"></i>`).join('')}<b style="width:${100-p.row/c.total*100}%"></b></div>
       <p>${de?`Reihe ${p.row} von ${c.total}`:`Row ${p.row} of ${c.total}`}${a?` · ${de?'zuletzt':'last'} <span class="agot" data-t="${p.last}">${a}</span>`:''}</p></button>`}).join('');
-  return `${SB.card()}<section class="card"><h2>${de?'Meine Projekte':'My projects'}</h2><p class="mu">${de?'Tippe auf ein Projekt, um weiterzumachen.':'Tap a project to continue.'}</p>${SYNC.html(1)}</section>${cards}${KAL.homeCard()}
+  return `${SB.card()}<section class="card"><h2>${de?'Meine Projekte':'My projects'}</h2><p class="mu">${de?'Tippe auf ein Projekt, um weiterzumachen.':'Tap a project to continue.'}</p>${SYNC.html(1)}</section>${cards}${FIN.homeCard()}${KAL.homeCard()}
   <section class="card"><label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
   <button class="pri" onclick="newP()">+ ${de?'Neues Projekt':'New project'}</button></section>`}
 
@@ -1557,6 +1574,92 @@ KAL.homeCard=function(){if(SB.c&&!SB.user){const de=DB.lang==='de';return `<sect
 const _render=render;render=function(){_render();SB.presence()};
 document.addEventListener('visibilitychange',()=>SB.presence());
 addEventListener('pagehide',()=>{if(SB.pch&&SB.tracked){try{SB.pch.untrack()}catch(e){}}});
+
+// ===== Strickzeit und Fertig-Schätzung =====
+// Gezählt wird die Zeit zwischen zwei +1. Liegen mehr als 30 Minuten dazwischen, war es eine Pause:
+// dann wird für diese Reihe das bisherige Durchschnittstempo angenommen.
+const PAUSE=30*60e3;
+const byId=id=>DB.projects.find(q=>q.id===id);
+function durTxt(ms){const de=DB.lang==='de',m=Math.max(1,Math.round(ms/60e3));if(m<60)return de?`${m} Min.`:`${m} min`;
+  const h=Math.floor(m/60),r=m%60;return h>=100||!r?(de?`${h} Std.`:`${h} h`):(de?`${h} Std. ${r} Min.`:`${h} h ${r} min`)}
+const TIME={
+  add(p,prev,now){if(!p.start)p.start=now;const gap=prev?now-prev:Infinity;
+    if(gap<=PAUSE){p.tm=(p.tm||0)+gap;p.tr=(p.tr||0)+1}
+    else if((p.tr||0)>=5){p.tm+=p.tm/p.tr;p.tr++}},
+  pace(p){return(p.tr||0)>=5&&p.tm>0?p.tm/p.tr:0},
+  html(p,c){if(!p.tm)return '';const de=DB.lang==='de',pace=this.pace(p),left=c.total-p.row;
+    let s=`🧶 ${de?'Strickzeit':'Knitting time'}: <b>${durTxt(p.tm)}</b>`;
+    if(pace){const ph=3600e3/pace;s+=` · ${de?'ca.':'about'} ${ph>=10?Math.round(ph):fmt(Math.round(ph*10)/10)} ${de?'Reihen/Std.':'rows/h'}`;
+      if(left>0)s+=`<br>${de?'Bei deinem Tempo fertig in ca.':'At your pace, done in about'} <b>${durTxt(left*pace)}</b>`}
+    return `<p class="tmx">${s}</p>`}
+};
+
+// ===== Rückgängig =====
+const UNDO={t:0,
+  show(msg,fn){clearTimeout(this.t);document.querySelectorAll('.toast').forEach(e=>e.remove());
+    let el=$('undo');if(!el){el=document.createElement('div');el.id='undo';el.className='undo';el.setAttribute('role','status');document.body.appendChild(el)}
+    el.innerHTML=`<span></span><button type="button">${DB.lang==='de'?'Rückgängig':'Undo'}</button>`;el.firstChild.textContent=msg;el.hidden=false;
+    el.querySelector('button').onclick=()=>{this.hide();fn();S=DB.projects[DB.cur]||DB.projects[0];save();render();toast(DB.lang==='de'?'Wiederhergestellt':'Restored')};
+    this.t=setTimeout(()=>this.hide(),7000)},
+  hide(){clearTimeout(this.t);const el=$('undo');if(el)el.hidden=true},
+  snapP(){const old=clone(S),i=DB.cur,de=DB.lang==='de';
+    setTimeout(()=>this.show(de?'Projekt zurückgesetzt':'Project reset',()=>{const j=DB.projects.findIndex(q=>q.id===old.id||q.id===S.id);DB.projects[j>=0?j:i]=clone(old);DB.cur=j>=0?j:i}),0)}
+};
+async function resetRow(){const de=DB.lang==='de';if(!await ask(t('resetQ')))return;
+  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start};
+  S.row=0;['fin','tm','tr','start'].forEach(k=>delete S[k]);save();updCount();
+  UNDO.show(de?'Fortschritt zurückgesetzt':'Progress reset',()=>{const p=byId(id);if(p)Object.assign(p,o)})}
+delP=async function(){const de=DB.lang==='de';if(DB.projects.length<2)return ask(t('lastP'),{info:1});if(!await ask(t('delQ')(S.name)))return;
+  const old=clone(S),i=DB.cur;DB.del=[...(DB.del||[]),S.id];DB.projects.splice(DB.cur,1);pickP(Math.max(0,DB.cur-1));
+  UNDO.show(de?`„${old.name}“ gelöscht`:`“${old.name}” deleted`,()=>{const p=clone(old);p.id=rid();DB.projects.splice(Math.min(i,DB.projects.length),0,p);DB.cur=DB.projects.indexOf(p)})};
+function delY(i){const y=DB.stash[i];if(!y)return;DB.stash.splice(i,1);save();render();
+  UNDO.show(DB.lang==='de'?`„${y.n}“ gelöscht`:`“${y.n}” deleted`,()=>DB.stash.splice(Math.min(i,DB.stash.length),0,y))}
+function clearShop(){const old=clone(DB.shop);DB.shop=DB.shop.filter(i=>!i.d);save();render();
+  UNDO.show(DB.lang==='de'?'Abgehakte gelöscht':'Checked items deleted',()=>{DB.shop=old})}
+const _bts=boughtToStash;boughtToStash=function(){const a=clone(DB.stash),b=clone(DB.shop);_bts();UNDO.show(t('moved'),()=>{DB.stash=a;DB.shop=b})};
+const _delS=delS;delS=function(i){if(S.stripes.length<2)return;const s=clone(S.stripes[i]),id=S.id;_delS(i);
+  UNDO.show(DB.lang==='de'?'Farbe entfernt':'Colour removed',()=>{const p=byId(id);if(p)p.stripes.splice(i,0,s)})};
+
+// ===== Fertig-Moment und Archiv =====
+const FIN={
+  check(o,tt){if(o<tt&&S.row>=tt){S.fin=Date.now();save();this.show(S.id)}else if(S.row<tt&&S.fin&&!S.arch){delete S.fin;save()}},
+  calcOf(p){const keep=S;S=p;try{return calc()}finally{S=keep}},
+  used(p){return this.calcOf(p).by.filter(x=>x.rows).map(x=>{const y=DB.stash.find(s=>norm(s.n)===norm(x.s.n));
+    return{x,y,b:y?Math.max(.5,Math.round(x.m/Math.max(1,y.m)*2)/2):0}}).filter(z=>z.y)},
+  days(p){const d=Math.max(1,Math.round((p.fin-p.start)/864e5));return DB.lang==='de'?(d===1?'1 Tag':`${d} Tage`):(d===1?'1 day':`${d} days`)},
+  show(id){const p=byId(id);if(!p)return;const de=DB.lang==='de',c=this.calcOf(p),u=p.taken?[]:this.used(p);
+    let el=$('fin');if(!el){el=document.createElement('div');el.id='fin';el.className='finx';el.onclick=e=>{if(e.target===el)FIN.close()};document.body.appendChild(el)}
+    el.innerHTML=`<canvas id="conf" aria-hidden="true"></canvas><div class="fbox" role="dialog" aria-modal="true" aria-labelledby="fint">
+      <div class="fi" aria-hidden="true">🎉</div><h2 id="fint">${de?'Fertig!':'Finished!'}</h2><p class="fn">${esc(p.name)}</p>
+      <div class="fs"><div><b>${c.total}</b><span>${de?'Reihen':'rows'}</span></div>${p.tm?`<div><b>${durTxt(p.tm)}</b><span>${de?'Strickzeit':'knitting'}</span></div>`:''}${p.start&&p.fin?`<div><b>${this.days(p)}</b><span>${de?'vom Start':'from start'}</span></div>`:''}</div>
+      <div id="finu">${u.length?`<p class="mu sm">${de?'Verbrauchtes Garn laut Berechnung:':'Yarn used (estimate):'}</p>${u.map(z=>`<div class="fy"><span class="sw" style="background:${esc(z.x.s.c)}"></span><span>${esc(z.x.s.n)}</span><b>−${fmt(z.b)} ${t('balls')}</b></div>`).join('')}
+        <button class="pri" onclick="FIN.take('${p.id}')">${de?'Vom Garnlager abziehen':'Deduct from stash'}</button>`:p.taken?`<p class="mu sm">✓ ${de?'Garn ist vom Lager abgezogen.':'Yarn deducted from stash.'}</p>`:''}</div>
+      ${p.arch?'':`<button class="${u.length?'ghost':'pri'}" onclick="FIN.archive('${p.id}')">📦 ${de?'Zu den fertigen Projekten legen':'Move to finished projects'}</button>`}
+      <button class="ghost" onclick="FIN.close()">${p.arch?(de?'Schließen':'Close'):(de?'Später':'Later')}</button></div>`;
+    el.hidden=false;this.confetti()},
+  close(){const el=$('fin');if(el)el.hidden=true;cancelAnimationFrame(this.raf)},
+  take(id){const p=byId(id);if(!p||p.taken)return;const de=DB.lang==='de',old=clone(DB.stash),u=this.used(p);
+    u.forEach(z=>{z.y.b=Math.max(0,Math.round((z.y.b-z.b)*2)/2)});p.taken=1;save();
+    $('finu').innerHTML=`<p class="mu sm">✓ ${de?'Garn ist vom Lager abgezogen.':'Yarn deducted from stash.'}</p>`;
+    UNDO.show(de?'Garn abgezogen':'Yarn deducted',()=>{DB.stash=old;const q=byId(id);if(q)delete q.taken})},
+  archive(id){const p=byId(id);if(!p)return;const de=DB.lang==='de';p.arch=1;if(!p.fin)p.fin=Date.now();this.close();
+    if(DB.projects[DB.cur]===p){const j=DB.projects.findIndex(q=>!q.arch);if(j>=0){DB.cur=j;S=DB.projects[j]}}
+    tab='home';save();render();scrollTo(0,0);
+    UNDO.show(de?'Bei den fertigen Projekten':'Moved to finished projects',()=>{const q=byId(id);if(q)delete q.arch})},
+  restore(id){const p=byId(id);if(!p)return;delete p.arch;save();render();toast(DB.lang==='de'?'Wieder bei den aktiven Projekten':'Back with active projects')},
+  homeCard(){const L=DB.projects.map((p,i)=>({p,i})).filter(o=>o.p.arch);if(!L.length)return '';const de=DB.lang==='de';
+    return `<section class="card"><details class="arch"><summary><h2>${de?'Fertige Projekte':'Finished projects'} <span class="mu">(${L.length})</span></h2></summary>
+      ${L.sort((a,b)=>(b.p.fin||0)-(a.p.fin||0)).map(({p,i})=>{const c=this.calcOf(p);
+        return `<div class="tbr"><span class="sw" style="background:${esc((p.stripes[0]||{}).c||'#f4a6c6')}"></span><button class="g an" onclick="FIN.show('${p.id}')"><b>${esc(p.name)}</b><small class="mu">${p.fin?new Date(p.fin).toLocaleDateString(de?'de-DE':'en-GB'):''} · ${c.total} ${de?'Reihen':'rows'}${p.tm?' · '+durTxt(p.tm):''}</small></button><button class="want" onclick="FIN.restore('${p.id}')">↩ ${de?'Zurückholen':'Restore'}</button></div>`}).join('')}</details></section>`},
+  confetti(){const cv=$('conf');if(!cv||matchMedia('(prefers-reduced-motion: reduce)').matches)return;cancelAnimationFrame(this.raf);
+    const x=cv.getContext('2d'),W=cv.width=innerWidth,H=cv.height=innerHeight,cols=['#f6a9c9','#8ccbf0','#ffd36e','#9fe0c9','#c9b8ef'],P=Array.from({length:110},()=>({x:Math.random()*W,y:-20-Math.random()*H*.5,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,r:Math.random()*6.3,vr:(Math.random()-.5)*.25,s:5+Math.random()*6,c:cols[Math.random()*5|0]}));
+    const t0=performance.now(),step=now=>{const k=(now-t0)/1000;x.clearRect(0,0,W,H);x.globalAlpha=Math.max(0,Math.min(1,3.2-k));
+      P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});
+      if(k<3.2)this.raf=requestAnimationFrame(step);else x.clearRect(0,0,W,H)};this.raf=requestAnimationFrame(step)}
+};
+go=function(d){const tt=calc().total,o=S.row,prev=S.last,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
+  if(S.row!==o){S.last=now;if(S.row>o)TIME.add(S,prev,now)}save();updCount();FIN.check(o,tt)};
+const _setRow=setRow;setRow=function(r){const o=S.row,tt=calc().total;_setRow(r);FIN.check(o,tt)};
 
 // ===== App: Offline-Speicher und Nachholen nach Funkloch =====
 if('serviceWorker' in navigator&&isSecureContext)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
