@@ -20,8 +20,8 @@ function countCard(){
   return `<section class="card">
     <div class="scarf">${c.segs.map(g=>`<i style="flex:${g.n};background:${esc(g.s.c)}"></i>`).join('')}<b style="width:${100-S.row/c.total*100}%"></b></div>
     <div class="big">${p}<small> ${t('done')}</small></div>
-    <p class="mu">${t('rowOf')(S.row,c.total,Math.round(S.row/c.total*c.len),c.len)} <button class="jb" onclick="jumpOpen()">${DB.lang==='de'?'Reihe eingeben':'Enter row'}</button></p>
-    <form class="jump" id="jump" hidden onsubmit="event.preventDefault();jumpGo()"><input type="number" id="jr" inputmode="numeric" pattern="[0-9]*" placeholder="0 – ${c.total}" aria-label="${DB.lang==='de'?'Reihe':'Row'}"><button type="submit">${DB.lang==='de'?'Los':'Go'}</button><button type="button" onclick="$('jump').hidden=true" aria-label="${t('close')}">✕</button></form>
+    <p class="mu" id="rowof">${done?t('allDone')(c.total,c.len):t('rowOf')(S.row+1,c.total,Math.round(S.row/c.total*c.len),c.len)} <button class="jb" onclick="jumpOpen()">${DB.lang==='de'?'Reihe eingeben':'Enter row'}</button></p>
+    <form class="jump" id="jump" hidden onsubmit="event.preventDefault();jumpGo()"><input type="number" id="jr" inputmode="numeric" pattern="[0-9]*" placeholder="1 – ${c.total}" aria-label="${DB.lang==='de'?'Reihe':'Row'}"><button type="submit">${DB.lang==='de'?'Los':'Go'}</button><button type="button" onclick="$('jump').hidden=true" aria-label="${t('close')}">✕</button></form>
     ${S.stripes.length>1||done?`<div class="cur"><span class="sw" style="background:${esc(cur.s.c)}"></span><span>${done?t('finished'):t('nowCol')(esc(cur.s.n),cur.b-S.row)}</span></div>`:''}
     ${agoHtml(S)}${TIME.html(S,c)}${done?`<button class="livebtn" onclick="FIN.show(S.id)">🎉 ${DB.lang==='de'?'Fertig-Übersicht':'Finish summary'}</button>`:''}
     ${alertHtml(c)}
@@ -58,8 +58,9 @@ document.addEventListener('visibilitychange',syncWake);
 
 // ===== Reihe direkt eingeben =====
 function jumpOpen(v){const f=$('jump'),i=$('jr');if(!f)return;f.hidden=false;i.value=v||'';i.focus();if(!v)i.select()}
-function jumpGo(){const i=$('jr'),v=parseInt(i.value,10);if(isNaN(v))return i.focus();const tt=calc().total;
-  setRow(v);toast(DB.lang==='de'?`Reihe ${Math.min(Math.max(v,0),tt)}`:`Row ${Math.min(Math.max(v,0),tt)}`)}
+// Eingabe = die Reihe, die man gerade strickt (wie überall angezeigt); intern zählt S.row die fertigen Reihen
+function jumpGo(){const i=$('jr'),v=parseInt(i.value,10);if(isNaN(v))return i.focus();const tt=calc().total,n=Math.min(Math.max(v,1),tt);
+  setRow(n-1);toast(DB.lang==='de'?`Jetzt Reihe ${n}`:`Now row ${n}`)}
 
 // ===== Reihen-Merker: Hinweis, wenn eine Reihe anders ist als die gleichen davor =====
 function rowKey(c,i){const r=c.R[i];if(!r)return null;const seg=c.segs.find(g=>i+1<=g.b);if(c.wk)return r.k==='skinny'?'skinny|':r.k+'|'+(seg?seg.idx:0);return (c.sop?r.k:'body')+'|'+(seg?seg.idx:0)}

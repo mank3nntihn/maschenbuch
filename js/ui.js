@@ -91,7 +91,7 @@ function vHome(){const de=DB.lang==='de',keep=S;
   const cards=DB.projects.map((p,i)=>{if(p.arch)return '';S=p;const c=calc();S=keep;const pc=Math.round(p.row/c.total*100),fin=p.row>=c.total,a=agoTxt(p.last);
     return `<button class="pc ${i===DB.cur?'on':''} ${fin?'fin':''}" onclick="pickP(${i})"><h3>${esc(p.name)}<span>${pc} %</span></h3>
       <div class="bar">${c.segs.map(g=>`<i style="flex:${g.n};background:${esc(g.s.c)}"></i>`).join('')}<b style="width:${100-p.row/c.total*100}%"></b></div>
-      <p>${de?`Reihe ${p.row} von ${c.total}`:`Row ${p.row} of ${c.total}`}${a?` · ${de?'zuletzt':'last'} <span class="agot" data-t="${p.last}">${a}</span>`:''}</p></button>`}).join('');
+      <p>${fin?(de?`Alle ${c.total} Reihen fertig`:`All ${c.total} rows done`):de?`Reihe ${p.row+1} von ${c.total}`:`Row ${p.row+1} of ${c.total}`}${a?` · ${de?'zuletzt':'last'} <span class="agot" data-t="${p.last}">${a}</span>`:''}</p></button>`}).join('');
   return `${SB.card()}<section class="card"><h2>${de?'Meine Projekte':'My projects'}</h2><p class="mu">${de?'Tippe auf ein Projekt, um weiterzumachen.':'Tap a project to continue.'}</p>${SYNC.html(1)}</section>${cards}${FIN.homeCard()}${KAL.homeCard()}
   <section class="card"><label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
   <button class="pri" onclick="newP()">+ ${de?'Neues Projekt':'New project'}</button></section>`}

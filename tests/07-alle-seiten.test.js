@@ -19,7 +19,7 @@ module.exports={name:'Alle Seiten, Vorlagen und Werkzeuge',async run(h,ok){
   ok(await p.evaluate(r0=>S.row===r0+1&&FOC.on,r0),'Großer Zähler zählt');await p.evaluate(()=>FOC.close());
   // Reihe eingeben
   await p.evaluate(()=>{tab='count';render()});await p.click('.jb');await p.fill('#jr','12');await p.press('#jr','Enter');
-  ok(await p.evaluate(()=>S.row===12),'„Reihe eingeben“ springt zur Reihe');
+  ok(await p.evaluate(()=>S.row===11),'„Reihe eingeben 12“: man strickt danach Reihe 12 (11 fertig)');
   // Farbwahl mit Hobbii-Garnen (garne.json)
   await p.evaluate(()=>{tab='stash';render()});await p.locator('.yr .swb').first().click();
   ok(await h.until(p,()=>document.querySelectorAll('#pkb .gi').length>10,null,8000),'Farbwahl lädt die Hobbii-Garnliste');
