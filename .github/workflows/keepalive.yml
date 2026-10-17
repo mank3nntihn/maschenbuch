@@ -30,13 +30,21 @@ jobs:
           SB_URL: https://nwrcohvrxxsccyllgfzl.supabase.co
           SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53cmNvaHZyeHhzY2N5bGxnZnpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMzU2NzYsImV4cCI6MjEwNzcxMTY3Nn0.9uL7MnSKKFQ_9sm2FNGbXiuyXTf3V8wRITkBv07llHA
         run: |
-          erg=$(curl -fsS --retry 3 --retry-delay 20 -X POST "$SB_URL/rest/v1/rpc/aufraeumen" \
+          code=$(curl -sS --retry 3 --retry-delay 20 -o erg.json -w '%{http_code}' -X POST "$SB_URL/rest/v1/rpc/aufraeumen" \
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" -H "Content-Type: application/json" -d '{}')
+          erg=$(cat erg.json)
+          if [ "$code" != "200" ]; then
+            if [ "$code" = "404" ]; then echo "::error title=Aufräumen::Die Funktion aufraeumen() fehlt in Supabase (SQL aus supabase/migrations noch nicht eingespielt). Antwort: $erg"
+            else echo "::error title=Aufräumen::Supabase antwortet mit HTTP $code: $erg"; fi
+            exit 1
+          fi
           echo "Entfernt: $erg"
           echo "### Aufräumen: $erg" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v5
+        if: always()
       - name: Repo alle 50 Tage kurz anstoßen
+        if: always()
         run: |
           last=$(git log -1 --format=%ct)
           if [ $(( $(date +%s) - last )) -gt $(( 50*86400 )) ]; then
