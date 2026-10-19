@@ -36,15 +36,31 @@ function countCard(){
 
 // +1 / −1: merkt sich die Zeit für die Strickzeit (fertig.js) und feiert die letzte Reihe
 function go(d){const tt=calc().total,o=S.row,prev=S.last,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
-  if(S.row!==o){S.last=now;if(S.row>o)TIME.add(S,prev,now)}save();updCount();FIN.check(o,tt)}
+  if(S.row!==o){S.last=now;if(S.row>o){TIME.add(S,prev,now);HIST.add(S,now,prev)}else HIST.trim(S)}save();updCount();FIN.check(o,tt)}
+
+// ===== Verlauf: wann die letzten Reihen fertig wurden (gegen versehentliches Doppel-Tippen) =====
+// p.hist = [{r: fertige Reihe, t: Zeitpunkt, g: Abstand zur Reihe davor}], die letzten 5 werden gespeichert
+const HIST={
+  add(p,now,prev){const h=(p.hist||[]).filter(e=>e.r<p.row),l=h[h.length-1],from=l&&l.r===p.row-1?l.t:prev;
+    h.push(from?{r:p.row,t:now,g:now-from}:{r:p.row,t:now});p.hist=h.slice(-5)},
+  trim(p){if(p.hist)p.hist=p.hist.filter(e=>e.r<=p.row)},
+  dur(ms){const de=DB.lang==='de',s=Math.max(1,Math.round(ms/1000)),m=Math.floor(s/60);
+    if(m<1)return de?`${s} Sek.`:`${s} s`;if(m<60)return de?`${m} Min. ${s%60} Sek.`:`${m} min ${s%60} s`;return durTxt(ms)},
+  when(ts){const de=DB.lang==='de',d=new Date(ts),n=new Date(),hm=d.toLocaleTimeString(de?'de-DE':'en-GB',{hour:'2-digit',minute:'2-digit'});
+    if(d.toDateString()===n.toDateString())return hm;const y=new Date(n);y.setDate(n.getDate()-1);
+    return d.toDateString()===y.toDateString()?(de?'gestern ':'yesterday ')+hm:d.toLocaleDateString(de?'de-DE':'en-GB',{day:'numeric',month:'numeric'})+' '+hm},
+  html(p){const h=(p.hist||[]).filter(e=>e.r<=p.row).slice(-3).reverse();if(!h.length)return '';const de=DB.lang==='de',pace=TIME.pace(p),kurz=pace?Math.max(15e3,pace/4):20e3;
+    return `<div class="feed"><p>${de?'Zuletzt gezählt':'Recently counted'}</p><ul>${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
+      return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'⚠️ ':'')+this.dur(e.g)+(w?(de?' – doppelt getippt?':' – tapped twice?'):'')}</span></li>`}).join('')}</ul></div>`}
+};
 // Nur Zähler-Karte und Live-3D aktualisieren, ohne die 3D-Ansicht neu aufzubauen
 function updCount(){KAL.push();if(FOC.on)return FOC.upd();if(tab!=='count'||!$('cnt'))return render();$('pop').hidden=true;$('cnt').innerHTML=countCard();if(LIVE.ctl)LIVE.ctl.setRow(S.row)}
 function toggleLive(){DB.live=!DB.live;save();render();if(DB.live&&innerWidth<900)setTimeout(()=>{const e=$('livecard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},60)}
-function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);save();render();FIN.check(o,tt)}
+function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);HIST.trim(S);save();render();FIN.check(o,tt)}
 
 async function resetRow(){const de=DB.lang==='de';if(!await ask(t('resetQ')))return;
-  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start};
-  S.row=0;['fin','tm','tr','start'].forEach(k=>delete S[k]);save();updCount();
+  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist};
+  S.row=0;['fin','tm','tr','start','hist'].forEach(k=>delete S[k]);save();updCount();
   UNDO.show(de?'Fortschritt zurückgesetzt':'Progress reset',()=>{const p=byId(id);if(p)Object.assign(p,o)})}
 
 // ===== Bildschirm anlassen =====
@@ -87,7 +103,7 @@ const FOC={on:false,ctl:null,
     const nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
     const det=c.wk&&!done?wkInfo(c,r):c.sop&&!done?`${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}`:`${rowLabel(c,Math.min(S.row,c.total-1))}`;
     return `<div class="rn">${done?(de?'Fertig!':'Done!'):(de?'Reihe ':'Row ')+nxt}<small> / ${c.total} · ${pc} %</small></div>
-      ${agoHtml(S)}${done?'':`<p class="info">${det}</p>${c.sop?`<p class="txt">${rowText(r)}</p>`:c.wk?`<p class="txt">${wkText(c,S.row)}</p>`:''}`}${alertHtml(c)}`},
+      ${agoHtml(S)}${done?'':`<p class="info">${det}</p>${c.sop?`<p class="txt">${rowText(r)}</p>`:c.wk?`<p class="txt">${wkText(c,S.row)}</p>`:''}`}${alertHtml(c)}${HIST.html(S)}`},
   html(){const de=DB.lang==='de',dk=(THEMES[DB.theme]||{}).dark;
     return `<div class="fz"><div class="top"><div id="fzi">${this.info()}</div><div class="tbw"><div class="tb"><button onclick="FOC.dark()" aria-label="${de?'Hell/Dunkel':'Light/Dark'}">${dk?'☀️':'🌙'}</button><button onclick="FOC.close()" aria-label="${t('close')}">✕</button></div><div class="kal kalf" id="kalf">${KAL.html(1)}</div></div></div>
       <div id="fgl" class="gl"></div>

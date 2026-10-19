@@ -1,0 +1,32 @@
+module.exports={name:'Verlauf im großen Zähler: letzte Reihen mit Zeitabstand',async run(h,ok){
+  const p=await h.page('u-anna','anna@x.de');
+  // Uhr im Browser steuerbar machen: T=Minuten seit Start
+  await p.evaluate(()=>{const t0=Date.now();window.__t=t0;Date.now=()=>window.__t;pickP(0);S.row=10;S.last=0;['tm','tr','hist'].forEach(k=>delete S[k]);save();tab='count';render();FOC.open()});
+  const plus=async(sek)=>{await p.evaluate(s=>{window.__t+=s*1000;go(1)},sek)};
+  const zeilen=()=>p.locator('.fz .feed li').allInnerTexts();
+  ok(await p.locator('.fz .feed').count()===0,'Ohne gezählte Reihen kein Verlauf');
+  await plus(60);await plus(240);await plus(250);await plus(245);
+  let z=await zeilen();
+  ok(z.length===3,'Zeigt genau die letzten 3 Reihen');
+  ok(/Reihe 14/.test(z[0])&&/Reihe 13/.test(z[1])&&/Reihe 12/.test(z[2]),'Neueste Reihe steht oben (14, 13, 12)');
+  ok(/4 Min\. 5 Sek\./.test(z[0])&&/4 Min\. 10 Sek\./.test(z[1])&&/4 Min\. 0 Sek\./.test(z[2]),'Abstand zur Reihe davor auf die Sekunde');
+  ok(/\d\d:\d\d/.test(z[0]),'Uhrzeit wird angezeigt');
+  await plus(4);z=await zeilen();
+  ok(/Reihe 15/.test(z[0])&&/4 Sek\..*doppelt getippt\?/.test(z[0])&&await p.locator('.fz .feed li.dbl').count()===1,'Sehr kurzer Abstand wird markiert: „doppelt getippt?“');
+  await p.evaluate(()=>go(-1));z=await zeilen();
+  ok(/Reihe 14/.test(z[0])&&!z.some(x=>/Reihe 15/.test(x))&&await p.locator('.fz .feed li.dbl').count()===0,'−1 nimmt die versehentliche Reihe wieder aus dem Verlauf');
+  await plus(230);z=await zeilen();
+  ok(/Reihe 15/.test(z[0])&&/3 Min\. 54 Sek\./.test(z[0])&&!/doppelt/.test(z[0]),'Neues +1 misst ab der Reihe davor, nicht ab dem −1');
+  await plus(2*3600);z=await zeilen();
+  ok(/Reihe 16/.test(z[0])&&/nach einer Pause/.test(z[0]),'Lange Pause wird als „nach einer Pause“ angezeigt');
+  ok(await p.evaluate(()=>S.hist.length===5),'Gespeichert werden höchstens 5 Reihen');
+  await p.evaluate(()=>{setRow(13);FOC.open()});z=await zeilen();
+  ok(/Reihe 13/.test(z[0])&&/Reihe 12/.test(z[1])&&z.length===2,'Reihe eingeben (zurück) entfernt spätere Reihen aus dem Verlauf');
+  await p.evaluate(()=>{DB.lang='en';FOC.upd()});z=await zeilen();
+  ok(/Row 13/.test(z[0])&&/min/.test(z[0])&&(await p.locator('.fz .feed p').innerText()).toLowerCase()==='recently counted','Englisch: „Recently counted“, „Row …“');
+  await p.evaluate(()=>{DB.lang='de';FOC.close()});
+  ok(await p.locator('#cnt .feed').count()===0,'Normaler Zähler bleibt ohne Verlauf');
+  await p.locator('button',{hasText:'Fortschritt zurücksetzen'}).click();await p.click('#dlgy');
+  ok(await p.evaluate(()=>!S.hist),'Zurücksetzen leert den Verlauf');
+  await p.click('#undo button');ok(await p.evaluate(()=>S.hist&&S.hist.length===2),'Rückgängig holt den Verlauf zurück');
+}};
