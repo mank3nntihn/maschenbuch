@@ -26,7 +26,7 @@ function countCard(){
     ${agoHtml(S)}${TIME.html(S,c)}${done?`<button class="livebtn" onclick="FIN.show(S.id)">🎉 ${DB.lang==='de'?'Fertig-Übersicht':'Finish summary'}</button>`:''}
     ${alertHtml(c)}
     ${ins}
-    <div class="pad"><button onclick="go(-1)" aria-label="${t('back')}">−1</button><button class="plus" onclick="go(1)">${t('rowDone')}</button></div>
+    ${PZ.bar(done)}${PZ.pad()}
     <button class="fbtn" onclick="FOC.open()">⛶ ${DB.lang==='de'?'Großer Zähler (Vollbild)':'Big counter (full screen)'}</button>
     <button class="livebtn" aria-expanded="${DB.live}" onclick="toggleLive()"><span>${DB.live?t('liveHide'):t('liveShow')}</span><span class="ar">▾</span></button>
     <button class="ghost" onclick="resetRow()">${t('reset')}</button>
@@ -35,14 +35,31 @@ function countCard(){
 }
 
 // +1 / −1: merkt sich die Zeit für die Strickzeit (fertig.js) und feiert die letzte Reihe
-function go(d){const tt=calc().total,o=S.row,prev=S.last,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
-  if(S.row!==o){S.last=now;if(S.row>o){TIME.add(S,prev,now);HIST.add(S,now,prev)}else HIST.trim(S)}save();updCount();FIN.check(o,tt)}
+function go(d){if(d>0&&S.pz)return PZ.hint();const tt=calc().total,o=S.row,prev=S.last,pt=S.pt||0,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
+  if(S.row!==o){S.last=now;delete S.pt;if(S.row>o){TIME.add(S,prev&&prev+pt,now);HIST.add(S,now,prev,pt)}else HIST.trim(S)}save();updCount();FIN.check(o,tt)}
+
+// ===== Pause-Timer: Zeit der aktuellen Reihe, anhalten für kurze Pausen =====
+// S.pz = seit wann pausiert, S.pt = Pausenzeit seit der letzten Reihe (zählt nicht zur Strickzeit). Während der Pause ist +1 gesperrt.
+const PZ={
+  el(p){if(!p.last)return null;const n=Date.now();return n-p.last-(p.pt||0)-(p.pz?n-p.pz:0)},
+  clock(ms){const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s/60)%60,x=String(s%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`},
+  time(p){const de=DB.lang==='de';if(p.pz)return this.clock(Date.now()-p.pz);const e=this.el(p);
+    return e==null?'–:––':e>PAUSE?(de?'über 30 Min.':'30+ min'):this.clock(e)},
+  msg(){return DB.lang==='de'?'Der Timer ist auf Pause – zum Weiterstricken oder -häkeln erst auf ▶ Weiter tippen.':'The timer is paused – tap ▶ Resume to keep knitting or crocheting.'},
+  bar(done){if(done)return '';const de=DB.lang==='de',on=!!S.pz;
+    return `<div class="rtm${on?' on':''}"><span class="rtt">${on?(de?'⏸ Pause':'⏸ Paused'):(de?'⏱ Diese Reihe':'⏱ This row')}: <b>${this.time(S)}</b></span><button class="pzb" onclick="PZ.toggle()" aria-pressed="${on}">${on?(de?'▶ Weiter':'▶ Resume'):'⏸ Pause'}</button></div>`},
+  pad(){const on=!!S.pz;return `<div class="pad"><button onclick="go(-1)" aria-label="${t('back')}">−1</button><button class="plus${on?' off':''}" aria-disabled="${on}"${on?` data-hint="${esc(this.msg())}"`:''} onclick="go(1)">${t('rowDone')}</button></div>`},
+  toggle(){const n=Date.now();if(S.pz){S.pt=(S.pt||0)+(n-S.pz);delete S.pz}else S.pz=n;save();this.refresh()},
+  refresh(){if(FOC.on){const b=$('fzbot');if(b)b.innerHTML=FOC.bot()}else if(tab==='count'&&$('cnt'))$('cnt').innerHTML=countCard()},
+  hint(){document.querySelectorAll('.toast').forEach(e=>e.remove());toast(this.msg(),3500);document.querySelectorAll('.rtm').forEach(e=>{e.classList.remove('nudge');void e.offsetWidth;e.classList.add('nudge')})}
+};
+setInterval(()=>{const b=document.querySelectorAll('.rtt b');if(b.length&&S)b.forEach(e=>e.textContent=PZ.time(S))},1000);
 
 // ===== Verlauf: wann die letzten Reihen fertig wurden (gegen versehentliches Doppel-Tippen) =====
 // p.hist = [{r: fertige Reihe, t: Zeitpunkt, g: Abstand zur Reihe davor}], die letzten 5 werden gespeichert
 const HIST={
-  add(p,now,prev){const h=(p.hist||[]).filter(e=>e.r<p.row),l=h[h.length-1],from=l&&l.r===p.row-1?l.t:prev;
-    h.push(from?{r:p.row,t:now,g:now-from}:{r:p.row,t:now});p.hist=h.slice(-5)},
+  add(p,now,prev,pt=0){const h=(p.hist||[]).filter(e=>e.r<p.row),l=h[h.length-1],from=l&&l.r===p.row-1?l.t:prev;
+    h.push(from?{r:p.row,t:now,g:Math.max(0,now-from-pt)}:{r:p.row,t:now});p.hist=h.slice(-5)},
   trim(p){if(p.hist)p.hist=p.hist.filter(e=>e.r<=p.row)},
   dur(ms){const de=DB.lang==='de',s=Math.max(1,Math.round(ms/1000)),m=Math.floor(s/60);
     if(m<1)return de?`${s} Sek.`:`${s} s`;if(m<60)return de?`${m} Min. ${s%60} Sek.`:`${m} min ${s%60} s`;return durTxt(ms)},
@@ -59,8 +76,8 @@ function toggleLive(){DB.live=!DB.live;save();render();if(DB.live&&innerWidth<90
 function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);HIST.trim(S);save();render();FIN.check(o,tt)}
 
 async function resetRow(){const de=DB.lang==='de';if(!await ask(t('resetQ')))return;
-  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist};
-  S.row=0;['fin','tm','tr','start','hist'].forEach(k=>delete S[k]);save();updCount();
+  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist,pz:S.pz,pt:S.pt};
+  S.row=0;['fin','tm','tr','start','hist','pz','pt'].forEach(k=>delete S[k]);save();updCount();
   UNDO.show(de?'Fortschritt zurückgesetzt':'Progress reset',()=>{const p=byId(id);if(p)Object.assign(p,o)})}
 
 // ===== Bildschirm anlassen =====
@@ -107,9 +124,10 @@ const FOC={on:false,ctl:null,
   html(){const de=DB.lang==='de',dk=(THEMES[DB.theme]||{}).dark;
     return `<div class="fz"><div class="top"><div id="fzi">${this.info()}</div><div class="tbw"><div class="tb"><button onclick="FOC.dark()" aria-label="${de?'Hell/Dunkel':'Light/Dark'}">${dk?'☀️':'🌙'}</button><button onclick="FOC.close()" aria-label="${t('close')}">✕</button></div><div class="kal kalf" id="kalf">${KAL.html(1)}</div></div></div>
       <div id="fgl" class="gl"></div>
-      <div class="pad"><button onclick="go(-1)" aria-label="${t('back')}">−1</button><button class="plus" onclick="go(1)">${t('rowDone')}</button></div></div>`},
+      <div class="bot" id="fzbot">${this.bot()}</div></div>`},
+  bot(){return PZ.bar(S.row>=calc().total)+PZ.pad()},
   start(){this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
-  upd(){const i=$('fzi');if(!i)return render();i.innerHTML=this.info();if(this.ctl)this.ctl.setRow(S.row)},
+  upd(){const i=$('fzi');if(!i)return render();i.innerHTML=this.info();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
   dark(){if(!THEMES[DB.theme].dark){DB.lightTheme=DB.theme;DB.theme='night'}else DB.theme=DB.lightTheme||'rose';save();render()}
 };
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&FOC.on&&innerWidth>=900){FOC.on=false;render()}});

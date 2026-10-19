@@ -16,7 +16,7 @@ Reine statische Seite für GitHub Pages, ohne Build-Schritt: Datei ändern, push
 | `js/texte.js` | Alle Texte Deutsch/Englisch, Abkürzungs-Erklärungen |
 | `js/daten.js` | Grundwerte, Vorlagen, Farbmuster, Speichern, Export/Import, Zusammenführen zweier Stände |
 | `js/anleitung.js` | Reihenpläne (Sophie Scarf, Weekend Scarf, Streifenschal), Berechnung, Anleitungs-Tab |
-| `js/zaehler.js` | Zähler, +1/−1, großer Zähler (Vollbild) mit Verlauf der letzten Reihen, Reihen-Merker, „Reihe eingeben“, Bildschirm anlassen |
+| `js/zaehler.js` | Zähler, +1/−1, großer Zähler (Vollbild) mit Verlauf der letzten Reihen, Pause-Timer, Reihen-Merker, „Reihe eingeben“, Bildschirm anlassen |
 | `js/fertig.js` | Strickzeit mit Fertig-Schätzung, Fertig-Moment mit Konfetti, Archiv „Fertige Projekte“ |
 | `js/projekt.js` | Tabs Wolle und Maße, Farben/Streifen |
 | `js/garn.js` | Garnlager, Einkaufsliste, Hobbii-Farbwahl (`garne.json`) |

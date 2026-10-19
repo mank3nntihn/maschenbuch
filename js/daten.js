@@ -40,7 +40,7 @@ const fmt=n=>DB.lang==='de'?String(n).replace('.',','):String(n);
 // abx: angezeigter Text, Glossar-Schlüssel, ausgeschriebene Form
 const abx=(shown,key,full)=>DB.abbr?`<abbr class="ab" data-k="${esc(key)}">${esc(String(shown).replace(/-/g,'\u2011'))}</abbr>`:esc(String(full??FULL[DB.lang][key]??shown).replace(/-/g,'\u2011'));
 const ab=(k,full)=>abx(k,k,full);
-function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+function toast(m,ms=1800){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),ms)}
 
 // ===== Export / Import =====
 function exportDB(){const d=new Date().toISOString().slice(0,10),b=new Blob([JSON.stringify({app:'maschenbuch',v:4,datum:d,daten:DB},null,1)],{type:'application/json'});
