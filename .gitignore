@@ -1,2 +1,4 @@
 node_modules/
 test-screens/
+.video/
+tools/demo-video/roh/

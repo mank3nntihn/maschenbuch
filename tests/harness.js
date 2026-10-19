@@ -40,14 +40,15 @@ async function create(){
       del.forEach(r=>notify(t,'DELETE',r));return{error:null}}
     return{error:{message:'unbekannt '+op}}}
   async function page(uid,email,o={}){
-    const ctx=await browser.newContext({viewport:o.viewport||{width:390,height:844},serviceWorkers:o.sw?'allow':'block'});
+    const ctx=await browser.newContext({viewport:o.viewport||{width:390,height:844},serviceWorkers:o.sw?'allow':'block',...(o.video?{recordVideo:o.video}:{})});
     await ctx.route('**/supabase.js',r=>r.fulfill({contentType:'text/javascript',body:MOCK}));
     await ctx.route(/hobbii|shopify|googleapis|gstatic/,r=>r.abort());
     const p=await ctx.newPage();p.on('pageerror',e=>errors.push(uid+': '+e.message));
     await p.addInitScript(([u,e,login,code])=>{window.__uid=u;window.__email=e;if(!sessionStorage.getItem('mock.init')){sessionStorage.setItem('mock.init','1');if(login)localStorage.setItem('mock.login','1');if(code)localStorage.setItem('mb.kreis',code)}},[uid,email,!!o.login,o.ohneCode?'':'testcode']);
     await p.exposeFunction('__sb',(op,a)=>handle(op,a));
+    if(o.init)await p.addInitScript(o.init[0],o.init[1]);
     pages.push(p);p.ctx=ctx;
-    await p.goto(BASE+'index.html');await p.waitForFunction(()=>window.SB&&typeof render==='function');if(o.ohneCode)return p;
+    await p.goto(BASE+(o.url||'index.html'));if(o.url)return p;await p.waitForFunction(()=>window.SB&&typeof render==='function');if(o.ohneCode)return p;
     if(o.login)await p.waitForFunction(()=>SB.user,null,{timeout:5000});
     return p}
   async function until(p,fn,arg,ms=5000){try{await p.waitForFunction(fn,arg,{timeout:ms,polling:100});return true}catch(e){return false}}
