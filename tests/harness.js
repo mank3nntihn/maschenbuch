@@ -3,8 +3,8 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
 const BASE=process.env.BASE||'http://localhost:8765/';
 const MOCK=fs.readFileSync(path.join(__dirname,'mocksb.js'),'utf8');
 const PK={user_state:['user_id'],kal:['user_id'],tausch:['id'],tausch_wunsch:['tausch_id','user_id']};
-async function create(){
-  const browser=await chromium.launch();const pages=[];const errors=[];
+async function create(opt={}){
+  const browser=await chromium.launch(opt.launch||{});const pages=[];const errors=[];
   const db={user_state:[],kal:[],tausch:[],tausch_wunsch:[]},gone=new Set(),online=new Set();let n=0;
   // Einladungscode wie in der Datenbank: Groß-/Kleinschreibung egal, Mitglieder bleiben Mitglieder
   const kreis={code:'testcode',mitglieder:new Set(),versuche:0};const codeOk=c=>String(c||'').trim().toLowerCase()===kreis.code;
@@ -46,7 +46,7 @@ async function create(){
     const p=await ctx.newPage();p.on('pageerror',e=>errors.push(uid+': '+e.message));
     await p.addInitScript(([u,e,login,code])=>{window.__uid=u;window.__email=e;if(!sessionStorage.getItem('mock.init')){sessionStorage.setItem('mock.init','1');if(login)localStorage.setItem('mock.login','1');if(code)localStorage.setItem('mb.kreis',code)}},[uid,email,!!o.login,o.ohneCode?'':'testcode']);
     await p.exposeFunction('__sb',(op,a)=>handle(op,a));
-    if(o.init)await p.addInitScript(o.init[0],o.init[1]);
+    if(o.init)for(const [fn,arg] of (Array.isArray(o.init[0])?o.init:[o.init]))await p.addInitScript(fn,arg);
     pages.push(p);p.ctx=ctx;
     await p.goto(BASE+(o.url||'index.html'));if(o.url)return p;await p.waitForFunction(()=>window.SB&&typeof render==='function');if(o.ohneCode)return p;
     if(o.login)await p.waitForFunction(()=>SB.user,null,{timeout:5000});

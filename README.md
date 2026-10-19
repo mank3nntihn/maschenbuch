@@ -66,3 +66,8 @@ Zwei Teile: „Website“ (Browser) und „Datenbank“ (`supabase start` mit al
 
 Lokal: `python3 -m http.server 8765` im Ordner starten, dann `node tests/run.js`
 (nur eine Gruppe: `node tests/run.js tausch`, mit Zeitangaben: `ZEIT=1 node tests/run.js`).
+
+## Demo-Video
+
+`tools/demo-video/` nimmt ein 2-Minuten-Video (1080p, 30 Bilder/s) mit Demo-Daten auf – Anleitung oben in
+`aufnahme.js`. Englisch ist Standard, `LANG_VIDEO=de` für Deutsch, `PROBE=1` für einen schnellen Probelauf mit Standbildern.
