@@ -23,6 +23,7 @@ function render(){
   $('nav').innerHTML=TABS.map((k,i)=>`<button ${k===tab?'aria-current="page"':''} onclick="tab='${k}';render();scrollTo(0,0)">${t('tabs')[i]}</button>`).join('');
   if(menuOpen)renderMenu();
   SB.presence();
+  if(TOUR.on)requestAnimationFrame(()=>TOUR.place());
 }
 let POPP=null;
 function popClose(){$('pop').hidden=true;if(POPP){POPP.stop();POPP=null}}
@@ -65,7 +66,7 @@ function setLang(l){DB.lang=l;save();render()}
 
 function menu(o){menuOpen=!!o;$('ov').hidden=!menuOpen;$('side').classList.toggle('open',menuOpen);$('side').setAttribute('aria-hidden',!menuOpen);if(menuOpen)renderMenu()}
 function renderMenu(){
-  const L=(k,l)=>`<button class="lnk" onclick="tab='${k}';menu(0);render();scrollTo(0,0)">${l}</button>`;
+  const L=(k,l)=>`<button class="lnk" data-k="${k}" onclick="tab='${k}';menu(0);render();scrollTo(0,0)">${l}</button>`;
   const open=DB.shop.filter(i=>!i.d).length;
   $('side').innerHTML=`<button class="x" onclick="menu(0)" aria-label="${t('close')}">✕</button>
   <h2>${t('project')}</h2>
@@ -74,6 +75,7 @@ function renderMenu(){
   <div class="three"><button onclick="newP()">+ ${t('newP')}</button><button onclick="renP()">${t('rename')}</button><button onclick="delP()">${t('del')}</button></div>
   ${L('home','🏠 '+(DB.lang==='de'?'Alle Projekte':'All projects'))}${L('count',t('tabsGo'))}
   <h2 style="margin-top:24px">Extras</h2>
+  <button class="lnk" data-k="tour" onclick="menu(0);TOUR.start()">🧭 ${DB.lang==='de'?'Tutorial: So funktioniert’s':'Tutorial: how it works'}</button>
   ${L('stash','🧶 '+t('stash'))}${L('shop','🛒 '+t('shop')+(open?` (${open})`:'')+(DB.shop.some(s=>!s.d&&(PK.match(s)||{}).vorher)?' 🏷️':''))}${L('tausch','🤝 '+(DB.lang==='de'?'Tauschbörse':'Yarn swap')+(TB.badge()?` (${TB.badge()})`:''))}${L('help','🎓 '+(DB.lang==='de'?'Hilfe & Techniken':'Help & techniques'))}${L('gloss','📖 '+t('gloss'))}${L('settings','⚙️ '+t('settings'))}
   ${SYNC.html()}
   <h2 style="margin-top:24px">${DB.lang==='de'?'Datensicherung':'Backup'}</h2>

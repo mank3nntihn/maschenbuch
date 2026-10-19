@@ -238,6 +238,14 @@ small.rab{margin-top:3px}
 .pk .fc s{color:var(--mu);font-weight:400}
 .rabh{margin:6px 0 4px;padding:10px 12px;border-radius:12px;background:rgba(217,58,91,.1);color:var(--ink);font-weight:600;font-size:15px}
 .gate .mb,.gate nav{display:none}
+#tour{position:fixed;inset:0;z-index:100}#tour[hidden]{display:none}
+#tour .tblock{position:absolute;inset:0}
+#tour .thl{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(30,20,50,.55);outline:3px solid var(--ac);pointer-events:none;transition:left .25s,top .25s,width .25s,height .25s}
+#tour .tbub{position:fixed;width:min(340px,calc(100vw - 32px));background:#fff;color:var(--ink);border-radius:18px;padding:14px 16px;box-shadow:0 16px 40px rgba(40,30,70,.35);transition:top .25s,left .25s}
+html[data-dark="1"] #tour .tbub{background:#1b1722}
+#tour .tprog{height:4px;border-radius:2px;background:var(--ln);overflow:hidden;margin:2px 0 10px}#tour .tprog i{display:block;height:100%;background:var(--ac);transition:width .25s}#tour .tsp{margin-right:auto}#tour h3{margin:2px 0 6px;font-size:19px}#tour .tbub>p{margin:0;line-height:1.45}
+#tour .tbtn{display:flex;gap:8px;margin-top:14px}#tour .tbtn button{width:auto;min-height:44px;margin:0;padding:0 16px}#tour .tbtn .ghost{margin-right:auto;padding:0 6px}
+@media(prefers-reduced-motion:reduce){#tour .thl,#tour .tbub{transition:none}}
 .gatec{text-align:center;margin-top:8vh}.gatec .gi{font-size:48px;line-height:1}.gatec h2{margin:10px 0 6px}
 .gatec input{width:100%;margin-top:14px;text-align:center;font-size:18px;min-height:52px;border-radius:14px;border:1px solid var(--ln);background:var(--fld);color:var(--ink);padding:0 14px}
 .gatec .warn{margin:12px 0 0}

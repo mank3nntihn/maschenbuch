@@ -26,6 +26,7 @@ Reine statische Seite für GitHub Pages, ohne Build-Schritt: Datei ändern, push
 | `js/knitalong.js` | Knit-Along-Balken der Freundinnen, grüner Punkt „strickt gerade“ |
 | `js/cloud.js` | Google-Anmeldung, Synchronisierung über Supabase, Konto abmelden/löschen |
 | `js/tausch.js` | Garn-Tauschbörse |
+| `js/tour.js` | Tutorial: geführte Tour durch die Website (Menü → Extras) |
 | `js/ui.js` | Seitenaufbau (`render`), Menü, Startseite, Einstellungen, Dialoge, Rückgängig, Impressum |
 | `js/start.js` | Startet alles (wird als letzte Datei geladen) |
 | `sw.js` | Offline-Speicher: eigene Dateien Netz zuerst, sonst gespeichert |
