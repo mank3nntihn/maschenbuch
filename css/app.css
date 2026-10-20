@@ -229,7 +229,7 @@ html[data-dark="1"] .gbtn{background:#131314;color:#e3e3e3;border-color:#8e918f}
 .undo button{min-height:40px;padding:0 16px;border-radius:999px;border:0;background:var(--ac);color:var(--on);flex:none}
 body.focus .undo{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .finx{position:fixed;inset:0;z-index:95;background:rgba(40,30,60,.42);display:flex;align-items:center;justify-content:center;padding:16px}
-.finx[hidden]{display:none}.finx canvas{position:fixed;inset:0;pointer-events:none}
+.finx[hidden]{display:none}.finx canvas{position:fixed;inset:0;pointer-events:none;z-index:2}
 .fbox{position:relative;background:#fff;color:var(--ink);width:min(400px,100%);max-height:calc(100dvh - 32px);overflow:auto;border-radius:24px;padding:22px 18px 14px;box-shadow:0 16px 40px rgba(40,30,70,.3);text-align:center}
 html[data-dark="1"] .fbox{background:#1b1722}
 .fbox .fi{font-size:44px;line-height:1}.fbox h2{margin:6px 0 2px;font-size:28px}.fbox .fn{margin:0 0 14px;color:var(--mu);font-weight:600}
@@ -284,7 +284,7 @@ html[data-dark="1"] .plus.off{background:#2c2833;border-color:#2c2833;color:#776
   .fz .feed{min-height:0;display:flex;flex-direction:column}.fz .feed ul{min-height:4em;overflow-y:auto;overscroll-behavior:contain}}
 
 /* Halbzeit-Animation */
-.half{position:fixed;inset:0;z-index:95;display:grid;place-items:center;pointer-events:none}
+.half{position:fixed;inset:0;z-index:95;display:grid;place-items:center;pointer-events:none}.half canvas{position:fixed;inset:0}
 .hbox{position:relative;display:grid;justify-items:center;gap:2px;min-width:230px;padding:20px 28px 18px;border-radius:28px;background:var(--fld);background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 16%,var(--fld)),var(--fld) 70%);border:2px solid var(--ac);text-align:center;color:var(--ink);
   box-shadow:0 18px 50px rgba(120,80,140,.28);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);animation:hin 3.6s cubic-bezier(.2,.8,.2,1) forwards}
 .hbox svg{width:84px;height:84px;transform:rotate(-90deg);margin-bottom:6px}
