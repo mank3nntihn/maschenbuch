@@ -68,7 +68,7 @@ const HIST={
     if(d.toDateString()===n.toDateString())return hm;const y=new Date(n);y.setDate(n.getDate()-1);
     return d.toDateString()===y.toDateString()?(de?'gestern ':'yesterday ')+hm:d.toLocaleDateString(de?'de-DE':'en-GB',{day:'numeric',month:'numeric'})+' '+hm},
   html(p){const h=(p.hist||[]).filter(e=>e.r<=p.row).slice(-10).reverse();if(!h.length)return '';const de=DB.lang==='de',pace=TIME.pace(p),kurz=pace?Math.max(15e3,pace/4):20e3;
-    return `<section class="fzx feed"><p class="cap">${de?'Zuletzt gezählt':'Recently counted'}${h.length>4?` · ${h.length}`:''}</p><ul onscroll="HIST.fade(this)">${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
+    return `<section class="fzx feed k3"><p class="cap">${de?'Zuletzt gezählt':'Recently counted'}${h.length>4?` · ${h.length}`:''}</p><ul onscroll="HIST.fade(this)">${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
       return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'<i class="wi s" aria-hidden="true">!</i>':'')+this.dur(e.g)+(w?(de?' – doppelt<span class="lg"> getippt</span>?':' – tapped<span class="lg"> twice</span>?'):'')}</span></li>`}).join('')}</ul></section>`}
 };
 // Nur Zähler-Karte und Live-3D aktualisieren, ohne die 3D-Ansicht neu aufzubauen
@@ -121,8 +121,8 @@ const FOC={on:false,ctl:null,
     const nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
     const det=c.wk&&!done?wkInfo(c,r):c.sop&&!done?`${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}`:`${rowLabel(c,Math.min(S.row,c.total-1))}`;
     const txt=done?'':c.sop?rowText(r):c.wk?wkText(c,S.row):'';
-    return `${alertHtml(c)}${done?'':`<section class="fzx"><p class="cap">${de?'Wo du bist':'Where you are'}</p><p class="info">${det}</p></section>`}
-      ${txt?`<section class="fzx"><p class="cap">${de?'Anleitung':'Pattern'}</p><p class="txt">${txt}</p></section>`:''}${HIST.html(S)}`},
+    return `${alertHtml(c)}${done?'':`<section class="fzx k1"><p class="cap">${de?'Wo du bist':'Where you are'}</p><p class="info">${det}</p></section>`}
+      ${txt?`<section class="fzx k2"><p class="cap">${de?'Anleitung':'Pattern'}</p><p class="txt">${txt}</p></section>`:''}${HIST.html(S)}`},
   head(){const c=calc(),de=DB.lang==='de',done=S.row>=c.total,nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
     return `<div class="rn">${done?(de?'Fertig!':'Done!'):(de?'Reihe ':'Row ')+nxt}<small> / ${c.total} · ${pc} %</small></div>`},
   html(){const de=DB.lang==='de',dk=(THEMES[DB.theme]||{}).dark;
