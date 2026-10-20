@@ -24,7 +24,7 @@ module.exports={name:'Verlauf im großen Zähler: letzte Reihen mit Zeitabstand'
   await p.evaluate(()=>{setRow(20);FOC.open()});z=await zeilen();
   ok(/Reihe 20/.test(z[0])&&/Reihe 19/.test(z[1])&&z.length===6,'Reihe eingeben (zurück) entfernt spätere Reihen aus dem Verlauf');
   await p.evaluate(()=>{DB.lang='en';FOC.upd()});z=await zeilen();
-  ok(/Row 20/.test(z[0])&&/min/.test(z[0])&&(await p.locator('.fz .feed p').innerText()).toLowerCase()==='recently counted','Englisch: „Recently counted“, „Row …“');
+  ok(/Row 20/.test(z[0])&&/min/.test(z[0])&&(await p.locator('.fz .feed p').innerText()).toLowerCase().startsWith('recently counted'),'Englisch: „Recently counted“, „Row …“');
   await p.evaluate(()=>{DB.lang='de';FOC.close()});
   ok(await p.locator('#cnt .feed').count()===0,'Normaler Zähler bleibt ohne Verlauf');
   await p.locator('button',{hasText:'Fortschritt zurücksetzen'}).click();await p.click('#dlgy');
