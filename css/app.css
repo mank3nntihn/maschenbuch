@@ -264,6 +264,8 @@ html[data-dark="1"] #tour .tbub{background:#1b1722}
 
 /* Pause-Timer über „Reihe fertig“ */
 .rtm{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 0;padding:6px 6px 6px 14px;border-radius:14px;background:var(--fld);border:1px solid var(--ln);font-size:15px;color:var(--mu)}
+.rtm:not(.on){background:#fff5c4;border-color:#f3e39b;color:#6e5c1c}.rtm:not(.on) b{color:#4f4210}.rtm:not(.on) button{background:#fffbe6;border-color:#eedc8c}
+html[data-dark="1"] .rtm:not(.on){background:#2d2916;border-color:#4a4322;color:#e8d98f}html[data-dark="1"] .rtm:not(.on) b{color:#fff1b0}html[data-dark="1"] .rtm:not(.on) button{background:#38321a;border-color:#5a5128}
 .rtm b{color:var(--ink);font-variant-numeric:tabular-nums}
 .rtm button{min-height:40px;padding:0 14px;border-radius:12px;font-size:15px;flex:none}
 .rtm.on{background:#fde3ee;background:color-mix(in srgb,var(--ac) 24%,#fff);border-color:var(--ac);color:var(--ink)}.rtm.on b{color:var(--ink)}
