@@ -16,6 +16,16 @@ const TIME={
     return `<p class="tmx">${s}</p>`}
 };
 
+// ===== Halbzeit: kleine Animation, wenn mit +1 die Hälfte erreicht wird (einmal pro Projekt) =====
+const HALF={
+  check(o,tt){const h=Math.ceil(tt/2);if(tt<4||S.half||o>=h||S.row<h)return;S.half=1;save();this.show(S.row,tt)},
+  show(row,tt){const de=DB.lang==='de',old=$('half');if(old)old.remove();const el=document.createElement('div');el.id='half';el.className='half';el.setAttribute('role','status');
+    const hz=Array.from({length:12},(_,i)=>`<i style="--x:${Math.round(Math.random()*240-120)}px;--d:${(i*.09).toFixed(2)}s;--s:${(.7+Math.random()*.7).toFixed(2)}">${i%3?'♥':'✿'}</i>`).join('');
+    el.innerHTML=`<div class="hbox"><div class="hz" aria-hidden="true">${hz}</div><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" class="b"/><circle cx="32" cy="32" r="26" class="f"/></svg><span class="hp">50 %</span>
+      <b>${de?'Halbzeit!':'Halfway there!'}</b><span>${de?`${row} von ${tt} Reihen geschafft`:`${row} of ${tt} rows done`}</span></div>`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),3700)}
+};
+
 // ===== Fertig-Moment und Archiv =====
 const FIN={
   check(o,tt){if(o<tt&&S.row>=tt){S.fin=Date.now();save();this.show(S.id)}else if(S.row<tt&&S.fin&&!S.arch){delete S.fin;save()}},

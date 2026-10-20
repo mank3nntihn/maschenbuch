@@ -280,3 +280,21 @@ html[data-dark="1"] .plus.off{background:#2c2833;border-color:#2c2833;color:#776
  .fz .feed .lg{display:none}.fz .feed li span:last-child{white-space:nowrap}}
 @media(min-width:900px) and (min-aspect-ratio:4/3){
   .fz .feed{min-height:0;display:flex;flex-direction:column}.fz .feed ul{min-height:4em;overflow-y:auto;overscroll-behavior:contain}}
+
+/* Halbzeit-Animation */
+.half{position:fixed;inset:0;z-index:95;display:grid;place-items:center;pointer-events:none}
+.hbox{position:relative;display:grid;justify-items:center;gap:2px;min-width:230px;padding:20px 28px 18px;border-radius:28px;background:var(--fld);background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 16%,var(--fld)),var(--fld) 70%);border:2px solid var(--ac);text-align:center;color:var(--ink);
+  box-shadow:0 18px 50px rgba(120,80,140,.28);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);animation:hin 3.6s cubic-bezier(.2,.8,.2,1) forwards}
+.hbox svg{width:84px;height:84px;transform:rotate(-90deg);margin-bottom:6px}
+.hbox circle{fill:none;stroke-width:7;stroke-linecap:round}.hbox .b{stroke:color-mix(in srgb,var(--ac) 25%,transparent)}
+.hbox .f{stroke:var(--ac);stroke-dasharray:163.4;stroke-dashoffset:163.4;animation:hring 1.2s .35s cubic-bezier(.3,.7,.2,1) forwards}
+.hbox .hp{position:absolute;top:20px;left:0;right:0;height:84px;display:grid;place-items:center;font:700 19px ui-rounded,system-ui,sans-serif;opacity:0;animation:hpop .5s 1.2s ease forwards}
+.hbox b{font:700 28px/1.15 ui-serif,"New York",Georgia,serif}.hbox>span:last-child{font-size:15px;color:var(--mu)}
+.hz{position:absolute;left:50%;top:50%;width:0;height:0}
+.hz i{position:absolute;font-style:normal;color:var(--ac);font-size:calc(20px*var(--s));opacity:0;animation:hfly 2.4s var(--d) ease-out forwards}
+.hz i:nth-child(3n){color:var(--ok)}
+@keyframes hin{0%{opacity:0;transform:scale(.7) translateY(24px)}12%{opacity:1;transform:scale(1.04) translateY(0)}20%{transform:scale(1)}84%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.97) translateY(-12px)}}
+@keyframes hring{to{stroke-dashoffset:81.7}}
+@keyframes hpop{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+@keyframes hfly{0%{opacity:0;transform:translate(-50%,0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--x)),-190px) scale(1) rotate(25deg)}}
+@media(prefers-reduced-motion:reduce){.hbox,.hbox .f,.hbox .hp{animation:none}.hbox .f{stroke-dashoffset:81.7}.hbox .hp{opacity:1}.hz{display:none}}

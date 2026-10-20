@@ -36,7 +36,7 @@ function countCard(){
 
 // +1 / −1: merkt sich die Zeit für die Strickzeit (fertig.js) und feiert die letzte Reihe
 function go(d){if(d>0&&S.pz)return PZ.hint();const tt=calc().total,o=S.row,prev=S.last,pt=S.pt||0,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
-  if(S.row!==o){S.last=now;delete S.pt;if(S.row>o){TIME.add(S,prev&&prev+pt,now);HIST.add(S,now,prev,pt)}else HIST.trim(S)}save();updCount();FIN.check(o,tt)}
+  if(S.row!==o){S.last=now;delete S.pt;if(S.row>o){TIME.add(S,prev&&prev+pt,now);HIST.add(S,now,prev,pt)}else HIST.trim(S)}save();updCount();if(d>0)HALF.check(o,tt);FIN.check(o,tt)}
 
 // ===== Pause-Timer: Zeit der aktuellen Reihe, anhalten für kurze Pausen =====
 // S.pz = seit wann pausiert, S.pt = Pausenzeit seit der letzten Reihe (zählt nicht zur Strickzeit). Während der Pause ist +1 gesperrt.
@@ -77,8 +77,8 @@ function toggleLive(){DB.live=!DB.live;save();render();if(DB.live&&innerWidth<90
 function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);HIST.trim(S);save();render();FIN.check(o,tt)}
 
 async function resetRow(){const de=DB.lang==='de';if(!await ask(t('resetQ')))return;
-  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist,pz:S.pz,pt:S.pt};
-  S.row=0;['fin','tm','tr','start','hist','pz','pt'].forEach(k=>delete S[k]);save();updCount();
+  const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist,pz:S.pz,pt:S.pt,half:S.half};
+  S.row=0;['fin','tm','tr','start','hist','pz','pt','half'].forEach(k=>delete S[k]);save();updCount();
   UNDO.show(de?'Fortschritt zurückgesetzt':'Progress reset',()=>{const p=byId(id);if(p)Object.assign(p,o)})}
 
 // ===== Bildschirm anlassen =====
