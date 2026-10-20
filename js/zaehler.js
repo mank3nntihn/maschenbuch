@@ -60,6 +60,7 @@ setInterval(()=>{const b=document.querySelectorAll('.rtt b');if(b.length&&S)b.fo
 const HIST={
   add(p,now,prev,pt=0){const h=(p.hist||[]).filter(e=>e.r<p.row),l=h[h.length-1],from=l&&l.r===p.row-1?l.t:prev;
     h.push(from?{r:p.row,t:now,g:Math.max(0,now-from-pt)}:{r:p.row,t:now});p.hist=h.slice(-10)},
+  fade(u){u=u||document.querySelector('.fz .feed ul');if(u)u.classList.toggle('end',u.scrollTop+u.clientHeight>=u.scrollHeight-2)},
   trim(p){if(p.hist)p.hist=p.hist.filter(e=>e.r<=p.row)},
   dur(ms){const de=DB.lang==='de',s=Math.max(1,Math.round(ms/1000)),m=Math.floor(s/60);
     if(m<1)return de?`${s} Sek.`:`${s} s`;if(m<60)return de?`${m} Min. ${s%60} Sek.`:`${m} min ${s%60} s`;return durTxt(ms)},
@@ -67,8 +68,8 @@ const HIST={
     if(d.toDateString()===n.toDateString())return hm;const y=new Date(n);y.setDate(n.getDate()-1);
     return d.toDateString()===y.toDateString()?(de?'gestern ':'yesterday ')+hm:d.toLocaleDateString(de?'de-DE':'en-GB',{day:'numeric',month:'numeric'})+' '+hm},
   html(p){const h=(p.hist||[]).filter(e=>e.r<=p.row).slice(-10).reverse();if(!h.length)return '';const de=DB.lang==='de',pace=TIME.pace(p),kurz=pace?Math.max(15e3,pace/4):20e3;
-    return `<div class="feed"><p>${de?'Zuletzt gezählt':'Recently counted'}${h.length>4?` <span class="mu">· ${h.length}</span>`:''}</p><ul onscroll="this.classList.toggle('end',this.scrollTop+this.clientHeight>=this.scrollHeight-2)">${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
-      return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'⚠️ ':'')+this.dur(e.g)+(w?(de?' – doppelt<span class="lg"> getippt</span>?':' – tapped<span class="lg"> twice</span>?'):'')}</span></li>`}).join('')}</ul></div>`}
+    return `<section class="fzx feed"><p class="cap">${de?'Zuletzt gezählt':'Recently counted'}${h.length>4?` · ${h.length}`:''}</p><ul onscroll="HIST.fade(this)">${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
+      return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'<i class="wi s" aria-hidden="true">!</i>':'')+this.dur(e.g)+(w?(de?' – doppelt<span class="lg"> getippt</span>?':' – tapped<span class="lg"> twice</span>?'):'')}</span></li>`}).join('')}</ul></section>`}
 };
 // Nur Zähler-Karte und Live-3D aktualisieren, ohne die 3D-Ansicht neu aufzubauen
 function updCount(){KAL.push();if(FOC.on)return FOC.upd();if(tab!=='count'||!$('cnt'))return render();$('pop').hidden=true;$('cnt').innerHTML=countCard();if(LIVE.ctl)LIVE.ctl.setRow(S.row)}
@@ -107,7 +108,7 @@ function rowAlert(c,row){ // row = Reihe, die als nächstes gestrickt wird (Inde
   const changed=row>0&&rowKey(c,row-1)!==k&&run>=2;let next=0;for(let j=row+1;j<c.total;j++){if(rowKey(c,j)!==k){next=j-row;break}}
   return{changed,run,next,nextLbl:next?rowLabel(c,row+next):'',lbl:rowLabel(c,row),prevLbl:row?rowLabel(c,row-1):''}}
 function alertHtml(c){const a=rowAlert(c,S.row),de=DB.lang==='de';if(!a)return'';
-  if(a.changed)return `<div class="alert" role="status"><span>⚠️</span><span>${de?`Achtung, Reihe ${S.row+1} ist anders`:`Heads up, row ${S.row+1} is different`}: ${esc(a.lbl)}<small>${de?`Die letzten ${a.run} Reihen waren: ${esc(a.prevLbl)}`:`The last ${a.run} rows were: ${esc(a.prevLbl)}`}</small></span></div>`;
+  if(a.changed)return `<div class="alert" role="status"><i class="wi" aria-hidden="true">!</i><span>${de?`Achtung, Reihe ${S.row+1} ist anders`:`Heads up, row ${S.row+1} is different`}: ${esc(a.lbl)}<small>${de?`Die letzten ${a.run} Reihen waren: ${esc(a.prevLbl)}`:`The last ${a.run} rows were: ${esc(a.prevLbl)}`}</small></span></div>`;
   if(a.next&&a.next<=3)return `<p class="soon">${de?`In ${a.next===1?'1 Reihe':a.next+' Reihen'} kommt: ${esc(a.nextLbl)}`:`In ${a.next} row${a.next>1?'s':''}: ${esc(a.nextLbl)}`}</p>`;
   return ''}
 
@@ -119,15 +120,19 @@ const FOC={on:false,ctl:null,
   info(){const c=calc(),de=DB.lang==='de',done=S.row>=c.total,r=c.R[Math.min(S.row,c.total-1)];
     const nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
     const det=c.wk&&!done?wkInfo(c,r):c.sop&&!done?`${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}`:`${rowLabel(c,Math.min(S.row,c.total-1))}`;
-    return `<div class="rn">${done?(de?'Fertig!':'Done!'):(de?'Reihe ':'Row ')+nxt}<small> / ${c.total} · ${pc} %</small></div>
-      ${agoHtml(S)}${done?'':`<p class="info">${det}</p>${c.sop?`<p class="txt">${rowText(r)}</p>`:c.wk?`<p class="txt">${wkText(c,S.row)}</p>`:''}`}${alertHtml(c)}${HIST.html(S)}`},
+    const txt=done?'':c.sop?rowText(r):c.wk?wkText(c,S.row):'';
+    return `${alertHtml(c)}${done?'':`<section class="fzx"><p class="cap">${de?'Wo du bist':'Where you are'}</p><p class="info">${det}</p></section>`}
+      ${txt?`<section class="fzx"><p class="cap">${de?'Anleitung':'Pattern'}</p><p class="txt">${txt}</p></section>`:''}${HIST.html(S)}`},
+  head(){const c=calc(),de=DB.lang==='de',done=S.row>=c.total,nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
+    return `<div class="rn">${done?(de?'Fertig!':'Done!'):(de?'Reihe ':'Row ')+nxt}<small> / ${c.total} · ${pc} %</small></div>`},
   html(){const de=DB.lang==='de',dk=(THEMES[DB.theme]||{}).dark;
-    return `<div class="fz"><div class="top"><div id="fzi">${this.info()}</div><div class="tbw"><div class="tb"><button onclick="FOC.dark()" aria-label="${de?'Hell/Dunkel':'Light/Dark'}">${dk?'☀️':'🌙'}</button><button onclick="FOC.close()" aria-label="${t('close')}">✕</button></div><div class="kal kalf" id="kalf">${KAL.html(1)}</div></div></div>
+    return `<div class="fz"><div class="top"><div id="fzh">${this.head()}</div><div class="tbw"><div class="tb"><button onclick="FOC.dark()" aria-label="${de?'Hell/Dunkel':'Light/Dark'}">${dk?'☀️':'🌙'}</button><button onclick="FOC.close()" aria-label="${t('close')}">✕</button></div><div class="kal kalf" id="kalf">${KAL.html(1)}</div></div></div>
+      <div id="fzi">${this.info()}</div>
       <div id="fgl" class="gl"></div>
       <div class="bot" id="fzbot">${this.bot()}</div></div>`},
   bot(){return PZ.bar(S.row>=calc().total)+PZ.pad()},
-  start(){this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
-  upd(){const i=$('fzi');if(!i)return render();i.innerHTML=this.info();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
+  start(){HIST.fade();this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
+  upd(){const i=$('fzi');if(!i)return render();i.innerHTML=this.info();$('fzh').innerHTML=this.head();HIST.fade();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
   dark(){if(!THEMES[DB.theme].dark){DB.lightTheme=DB.theme;DB.theme='night'}else DB.theme=DB.lightTheme||'rose';save();render()}
 };
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&FOC.on&&innerWidth>=900){FOC.on=false;render()}});

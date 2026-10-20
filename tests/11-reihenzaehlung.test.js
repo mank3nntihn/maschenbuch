@@ -6,7 +6,7 @@ module.exports={name:'Reihenzählung: überall dieselbe Reihe, Warnung passend',
     await p.evaluate(r=>{S.row=r-1;save();tab='count';FOC.on=false;render()},r);
     const zaehler=await p.locator('#rowof').innerText(),warn=await p.locator('#cnt .alert').innerText();
     ok(zaehler.includes(`Reihe ${r} von`)&&warn.includes(`Reihe ${r} ist anders`),`Reihe ${r}: normaler Zähler zeigt „Reihe ${r}“ und warnt zu Reihe ${r}`);
-    await p.evaluate(()=>FOC.open());const gross=await p.locator('#fzi').innerText();await p.evaluate(()=>FOC.close());
+    await p.evaluate(()=>FOC.open());const gross=await p.locator('.fz').innerText();await p.evaluate(()=>FOC.close());
     ok(gross.includes(`Reihe ${r}`)&&gross.includes(`Reihe ${r} ist anders`),`Reihe ${r}: großer Zähler zeigt dieselbe Reihe und dieselbe Warnung`);
     await p.evaluate(()=>{tab='home';render()});
     ok((await p.locator('.pc').first().innerText()).includes(`Reihe ${r} von`),`Reihe ${r}: Startseite zeigt dieselbe Reihe`);
