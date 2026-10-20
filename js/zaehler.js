@@ -56,19 +56,19 @@ const PZ={
 setInterval(()=>{const b=document.querySelectorAll('.rtt b');if(b.length&&S)b.forEach(e=>e.textContent=PZ.time(S))},1000);
 
 // ===== Verlauf: wann die letzten Reihen fertig wurden (gegen versehentliches Doppel-Tippen) =====
-// p.hist = [{r: fertige Reihe, t: Zeitpunkt, g: Abstand zur Reihe davor}], die letzten 5 werden gespeichert
+// p.hist = [{r: fertige Reihe, t: Zeitpunkt, g: Abstand zur Reihe davor}], die letzten 10 werden gespeichert und angezeigt
 const HIST={
   add(p,now,prev,pt=0){const h=(p.hist||[]).filter(e=>e.r<p.row),l=h[h.length-1],from=l&&l.r===p.row-1?l.t:prev;
-    h.push(from?{r:p.row,t:now,g:Math.max(0,now-from-pt)}:{r:p.row,t:now});p.hist=h.slice(-5)},
+    h.push(from?{r:p.row,t:now,g:Math.max(0,now-from-pt)}:{r:p.row,t:now});p.hist=h.slice(-10)},
   trim(p){if(p.hist)p.hist=p.hist.filter(e=>e.r<=p.row)},
   dur(ms){const de=DB.lang==='de',s=Math.max(1,Math.round(ms/1000)),m=Math.floor(s/60);
     if(m<1)return de?`${s} Sek.`:`${s} s`;if(m<60)return de?`${m} Min. ${s%60} Sek.`:`${m} min ${s%60} s`;return durTxt(ms)},
   when(ts){const de=DB.lang==='de',d=new Date(ts),n=new Date(),hm=d.toLocaleTimeString(de?'de-DE':'en-GB',{hour:'2-digit',minute:'2-digit'});
     if(d.toDateString()===n.toDateString())return hm;const y=new Date(n);y.setDate(n.getDate()-1);
     return d.toDateString()===y.toDateString()?(de?'gestern ':'yesterday ')+hm:d.toLocaleDateString(de?'de-DE':'en-GB',{day:'numeric',month:'numeric'})+' '+hm},
-  html(p){const h=(p.hist||[]).filter(e=>e.r<=p.row).slice(-3).reverse();if(!h.length)return '';const de=DB.lang==='de',pace=TIME.pace(p),kurz=pace?Math.max(15e3,pace/4):20e3;
-    return `<div class="feed"><p>${de?'Zuletzt gezählt':'Recently counted'}</p><ul>${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
-      return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'⚠️ ':'')+this.dur(e.g)+(w?(de?' – doppelt getippt?':' – tapped twice?'):'')}</span></li>`}).join('')}</ul></div>`}
+  html(p){const h=(p.hist||[]).filter(e=>e.r<=p.row).slice(-10).reverse();if(!h.length)return '';const de=DB.lang==='de',pace=TIME.pace(p),kurz=pace?Math.max(15e3,pace/4):20e3;
+    return `<div class="feed"><p>${de?'Zuletzt gezählt':'Recently counted'}${h.length>4?` <span class="mu">· ${h.length}</span>`:''}</p><ul onscroll="this.classList.toggle('end',this.scrollTop+this.clientHeight>=this.scrollHeight-2)">${h.map(e=>{const w=e.g!=null&&e.g<kurz,lang=e.g>PAUSE;
+      return `<li${w?' class="dbl"':''}><b>${de?'Reihe':'Row'} ${e.r}</b><span>${this.when(e.t)}</span><span>${e.g==null?'':lang?(de?'nach einer Pause':'after a break'):(w?'⚠️ ':'')+this.dur(e.g)+(w?(de?' – doppelt<span class="lg"> getippt</span>?':' – tapped<span class="lg"> twice</span>?'):'')}</span></li>`}).join('')}</ul></div>`}
 };
 // Nur Zähler-Karte und Live-3D aktualisieren, ohne die 3D-Ansicht neu aufzubauen
 function updCount(){KAL.push();if(FOC.on)return FOC.upd();if(tab!=='count'||!$('cnt'))return render();$('pop').hidden=true;$('cnt').innerHTML=countCard();if(LIVE.ctl)LIVE.ctl.setRow(S.row)}
