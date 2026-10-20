@@ -299,10 +299,10 @@ html[data-dark="1"] .plus.off{background:#2c2833;border-color:#2c2833;color:#776
 @keyframes hfly{0%{opacity:0;transform:translate(-50%,0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--x)),-190px) scale(1) rotate(25deg)}}
 @media(prefers-reduced-motion:reduce){.hbox,.hbox .f,.hbox .hp{animation:none}.hbox .f{stroke-dashoffset:81.7}.hbox .hp{opacity:1}.hz{display:none}}
 
-/* Kästen im großen Zähler: 1 Babyblau, 2 Lila, 3 Pastell-Lila */
+/* Kästen im großen Zähler: 1 Babyblau, 2 Pastell-Grün, 3 Pastell-Lila */
 .fzx.k1{background:#dcefff;border-color:#c2e0fb}.fzx.k1 .cap{color:#3f7fb5}
-.fzx.k2{background:#e4d6fb;border-color:#cfb9f4}.fzx.k2 .cap{color:#7346c2}
+.fzx.k2{background:#dcf5e6;border-color:#bfe8cf}.fzx.k2 .cap{color:#3e9466}
 .fzx.k3{background:#efe6fd;border-color:#ddd0f7}.fzx.k3 .cap{color:#8d6bc9}
 html[data-dark="1"] .fzx.k1{background:#1b2735;border-color:#2a3d52}html[data-dark="1"] .fzx.k1 .cap{color:#8fc3ee}
-html[data-dark="1"] .fzx.k2{background:#2a2142;border-color:#3d2f60}html[data-dark="1"] .fzx.k2 .cap{color:#c3a6f5}
+html[data-dark="1"] .fzx.k2{background:#1a2b23;border-color:#284234}html[data-dark="1"] .fzx.k2 .cap{color:#93dcb4}
 html[data-dark="1"] .fzx.k3{background:#231e31;border-color:#342c48}html[data-dark="1"] .fzx.k3 .cap{color:#b9a3e3}
