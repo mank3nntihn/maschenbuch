@@ -1,0 +1,30 @@
+name: Datenbank-Tests
+
+# Startet ein echtes, frisches Supabase mit allen Migrationen und prüft Regeln und Funktionen.
+# Läuft nur bei Änderungen an der Datenbank, zusätzlich einmal pro Woche (falls sich Supabase selbst ändert).
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/**', '.github/workflows/datenbank.yml']
+  pull_request:
+    paths: ['supabase/**']
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  datenbank:
+    name: Datenbank (echtes Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Supabase starten und alle Migrationen einspielen
+        run: |
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector > start.log 2>&1 || { tail -25 start.log | sed 's/^/::error title=supabase start::/'; exit 1; }
+          tail -5 start.log
+      - name: Datenbank-Tests
+        run: supabase/tests/run.sh

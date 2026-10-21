@@ -1,12 +1,10 @@
-module.exports={name:'Alle Seiten, Vorlagen und Werkzeuge',async run(h,ok){
+module.exports={name:'Alle Seiten, Vorlagen und Werkzeuge (3D: siehe 16-3d)',async run(h,ok){
   const p=await h.page('u-anna','anna@x.de');
   const seiten={count:'Reihe fertig',steps:'Tippe auf einen Schritt',wool:'Wollbedarf',size:'Lauflänge',stash:'Garnlager',shop:'Einkaufsliste',gloss:'Abkürzungen',settings:'Farbmuster',help:'Hilfe & Techniken',tausch:'Tauschbörse',impressum:'Impressum','3d':''};
   for(const tpl of ['sophie','weekend','stripe']){
     await p.evaluate(tpl=>{newTpl=tpl;const def=tplDef(tpl),q=clone(def);q.id=rid();q.name='T-'+tpl;DB.projects.push(q);pickP(DB.projects.length-1)},tpl);
     let fehlt=[];for(const [pg,txt] of Object.entries(seiten)){await p.evaluate(pg=>{tab=pg;render()},pg);if(txt&&!(await p.locator('main').innerText()).includes(txt))fehlt.push(pg)}
     ok(!fehlt.length,`Vorlage ${tpl}: alle ${Object.keys(seiten).length} Seiten zeigen ihren Inhalt`+(fehlt.length?' – fehlt: '+fehlt:''));
-    await p.evaluate(()=>{tab='3d';render()});await p.waitForTimeout(300);
-    ok(await p.evaluate(()=>{const c=document.querySelector('#gl canvas');return !!c&&c.width>0}),`Vorlage ${tpl}: 3D-Ansicht zeichnet`);
   }
   // Lern-Ecke: Animation läuft
   await p.evaluate(()=>{tab='help';helpOpen='re';render()});await p.waitForTimeout(400);

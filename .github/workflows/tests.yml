@@ -1,9 +1,11 @@
 name: Automatische Tests
 
+# Browser-Tests der Website bei jedem Push. Die Datenbank-Tests laufen separat (datenbank.yml),
+# nur wenn sich unter supabase/ etwas ändert – sie brauchen über eine Minute für den Supabase-Start.
 on:
   push:
     branches: [main]
-    paths-ignore: ['.github/keepalive', 'garne.json', 'README.md']
+    paths-ignore: ['.github/keepalive', 'garne.json', '**.md', 'tools/**', 'supabase/**', '.github/workflows/datenbank.yml', '.github/workflows/keepalive.yml', '.github/workflows/garne.yml']
   pull_request:
   workflow_dispatch:
 
@@ -17,15 +19,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - name: Playwright mit Chromium installieren
-        run: |
-          npm install --no-save --no-package-lock playwright@1.49.1
-          npx playwright install --with-deps chromium
+      - name: Playwright installieren (nutzt das vorinstallierte Google Chrome)
+        run: npm install --no-save --no-package-lock playwright@1.49.1
       - name: Website lokal starten
         run: |
           python3 -m http.server 8765 >/dev/null 2>&1 &
           sleep 1
-      - name: Tests ausführen
+      - name: Tests ausführen (Gruppen parallel)
+        env:
+          PW_CHANNEL: chrome
         run: node tests/run.js
       - name: Bildschirmfotos bei Fehlern hochladen
         if: failure()
@@ -34,19 +36,3 @@ jobs:
           name: test-screens
           path: test-screens/
           if-no-files-found: ignore
-
-  datenbank:
-    name: Datenbank (echtes Supabase)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Supabase starten und alle Migrationen einspielen
-        run: |
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector > start.log 2>&1 || { tail -25 start.log | sed 's/^/::error title=supabase start::/'; exit 1; }
-          tail -5 start.log
-      - name: Datenbank-Tests
-        run: supabase/tests/run.sh

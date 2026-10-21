@@ -62,10 +62,13 @@ Alle Dateien teilen sich einen gemeinsamen Bereich (klassische `<script>`-Dateie
 ersetzt, es werden also keine echten Daten angefasst. Sie laufen bei jedem Push automatisch
 (Actions → „Automatische Tests“) und lassen sich dort auch per „Run workflow“ starten.
 
-Zwei Teile: „Website“ (Browser) und „Datenbank“ (`supabase start` mit allen Migrationen, dann `supabase/tests/run.sh`).
+Zwei Teile: „Website“ (Browser, bei jedem Push) und „Datenbank-Tests“ (`supabase start` mit allen Migrationen,
+dann `supabase/tests/run.sh` – nur bei Änderungen unter `supabase/` und einmal pro Woche).
 
-Lokal: `python3 -m http.server 8765` im Ordner starten, dann `node tests/run.js`
-(nur eine Gruppe: `node tests/run.js tausch`, mit Zeitangaben: `ZEIT=1 node tests/run.js`).
+Lokal: `python3 -m http.server 8765` im Ordner starten, dann `node tests/run.js` (ca. 1 Minute, Gruppen laufen parallel).
+Nur bestimmte Gruppen: `node tests/run.js verlauf pause`, mit Zeitangaben: `ZEIT=1 …`, nacheinander: `PARALLEL=1 …`.
+3D wird nur in der Gruppe `16-3d` wirklich gezeichnet, sonst übersprungen (ohne Grafikkarte sehr langsam).
+Arbeitsweise (welche Tests bei welcher Änderung): siehe `CLAUDE.md`.
 
 ## Demo-Video
 

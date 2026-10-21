@@ -37,7 +37,7 @@ const TOUR={on:false,i:0,list:[],back:null,
   key:e=>{if(!TOUR.on)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();TOUR.end()}else if(e.key==='ArrowRight'||e.key==='Enter'){e.preventDefault();e.stopPropagation();TOUR.next()}else if(e.key==='ArrowLeft'){e.preventDefault();e.stopPropagation();TOUR.prev()}else e.stopPropagation()},
   re:()=>TOUR.place(),
   // Schritt i anzeigen; dir = Richtung, falls ein Element fehlt und übersprungen wird
-  async show(i,dir){const s=this.list[i];if(!s)return this.end();this.i=i;
+  async show(i,dir){const s=this.list[i];if(!s)return this.end();this.i=i;this.ready=false;
     popClose&&popClose();s.at();const m=!!s.menu;if(menuOpen!==m)menu(m);render();if(m)renderMenu();
     if(m)await new Promise(r=>setTimeout(r,320)); // Menü fährt herein
     const el=this.find(s);
@@ -47,7 +47,7 @@ const TOUR={on:false,i:0,list:[],back:null,
     $('tourb').innerHTML=`<div class="tprog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round((i+1)/n*100)}"><i style="width:${(i+1)/n*100}%"></i></div><h3>${s.t}</h3><p>${s.x}</p>
       <div class="tbtn">${i===n-1?'<span class="tsp"></span>':`<button type="button" class="ghost" onclick="TOUR.end()">${de?'Beenden':'Skip'}</button>`}
       ${i>0?`<button type="button" onclick="TOUR.prev()">${de?'Zurück':'Back'}</button>`:''}<button type="button" class="pri" id="tnext" onclick="TOUR.next()">${i===n-1?(de?'Fertig':'Finish'):(de?'Weiter':'Next')}</button></div>`;
-    requestAnimationFrame(()=>{this.place();const b=$('tnext');if(b)b.focus({preventScroll:true})})},
+    requestAnimationFrame(()=>{this.place();const b=$('tnext');if(b)b.focus({preventScroll:true});this.ready=true})},
   // erstes vorhandene Element (sel kann eine Liste von Alternativen sein)
   find(s){if(!s||!s.sel)return null;for(const q of [].concat(s.sel)){const e=document.querySelector(q);if(e&&e.getClientRects().length)return e}return null},
   // Lichtkegel und Sprechblase passend zum Element setzen

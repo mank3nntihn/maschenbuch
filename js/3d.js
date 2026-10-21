@@ -260,6 +260,7 @@ c=pow(clamp(c,0.,1.),vec3(1./2.2));o=vec4(c*uA,uA);}`));
 
 // ---- 3D-Ansicht als wiederverwendbares Bauteil (3D-Tab und Live-Ansicht im Zähler) ----
 function View3D(box,cap,o){
+  if(window.__ohne3d){box.innerHTML='';return null} // nur in den Tests gesetzt: spart dort das langsame Zeichnen ohne Grafikkarte
   const cv=document.createElement('canvas');box.appendChild(cv);
   let R=null;try{R=GLR(cv)}catch(e){R=null}
   if(!R){box.innerHTML=`<p class="mu" style="padding:16px">${t('no3d')}</p>`;return null}
