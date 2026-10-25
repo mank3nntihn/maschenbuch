@@ -11,11 +11,11 @@ module.exports={name:'Pause-Timer: Reihe anhalten, „Reihe fertig“ gesperrt',
   ok(await p.locator('#cnt .plus.off[aria-disabled="true"]').count()===1,'„Reihe fertig“ ist ausgegraut');
   await vor(120);
   ok(/Pause: 2:00/.test(await p.locator('#cnt .rtt').innerText()),'Während der Pause läuft die Pausenzeit (2:00)');
-  const r0=await p.evaluate(()=>S.row);await p.locator('#cnt .plus').click({force:true});
+  const r0=await p.evaluate(()=>S.row);await p.locator('#cnt .plus').evaluate(e=>e.scrollIntoView({block:'center'}));await p.locator('#cnt .plus').click({force:true});
   ok(await p.evaluate(r0=>S.row===r0,r0),'Tippen auf „Reihe fertig“ zählt nicht weiter');
   ok(await h.until(p,()=>[...document.querySelectorAll('.toast')].some(e=>!e.hidden&&/Timer ist auf Pause/.test(e.textContent))),'Hinweis „Timer ist auf Pause …“ erscheint beim Tippen');
   await p.keyboard.press('ArrowRight');ok(await p.evaluate(r0=>S.row===r0,r0),'Auch die Tastatur (→) zählt in der Pause nicht');
-  await h.until(p,()=>!document.querySelector('.toast'),null,6000);await p.locator('#cnt .plus').hover({force:true});
+  await h.until(p,()=>!document.querySelector('.toast'),null,6000);await p.locator('#cnt .plus').evaluate(e=>e.scrollIntoView({block:'center'}));await p.locator('#cnt .plus').hover({force:true});
   const tip=await p.locator('#cnt .plus').evaluate(e=>getComputedStyle(e,'::after').content);
   ok(/Timer ist auf Pause/.test(tip),'Beim Drüberfahren erscheint der Hinweis am Knopf');
   await p.click('#cnt .pzb');
