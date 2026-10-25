@@ -15,12 +15,13 @@ function countCard(){
   const cur=c.segs.find(g=>S.row+1<=g.b)||c.segs[c.segs.length-1];
   let ins='';
   if(c.wk&&!done){const r=c.R[S.row];ins=`<div class="ins"><p class="mu">${wkInfo(c,r)}</p><div>${wkText(c,S.row)}</div></div>`}
+  if(c.gm&&!done){const r=c.R[S.row];ins=`<div class="ins"><p class="mu">${gmInfo(c,r)}</p><div>${gmText(c,r)}</div></div>`}
   if(c.sop&&!done){const r=c.R[S.row];
     ins=`<div class="ins"><p class="mu">${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}</p><div>${rowText(r)}</div></div>`}
   return `<section class="card">
     <div class="scarf">${c.segs.map(g=>`<i style="flex:${g.n};background:${esc(g.s.c)}"></i>`).join('')}<b style="width:${100-S.row/c.total*100}%"></b></div>
     <div class="big">${p}<small> ${t('done')}</small></div>
-    <p class="mu" id="rowof">${done?t('allDone')(c.total,c.len):t('rowOf')(S.row+1,c.total,Math.round(S.row/c.total*c.len),c.len)} <button class="jb" onclick="jumpOpen()">${DB.lang==='de'?'Reihe eingeben':'Enter row'}</button></p>
+    <p class="mu" id="rowof">${c.gm?gmRowOf(c,done):done?t('allDone')(c.total,c.len):t('rowOf')(S.row+1,c.total,Math.round(S.row/c.total*c.len),c.len)} <button class="jb" onclick="jumpOpen()">${DB.lang==='de'?'Reihe eingeben':'Enter row'}</button></p>
     <form class="jump" id="jump" hidden onsubmit="event.preventDefault();jumpGo()"><input type="number" id="jr" inputmode="numeric" pattern="[0-9]*" placeholder="1 – ${c.total}" aria-label="${DB.lang==='de'?'Reihe':'Row'}"><button type="submit">${DB.lang==='de'?'Los':'Go'}</button><button type="button" onclick="$('jump').hidden=true" aria-label="${t('close')}">✕</button></form>
     ${S.stripes.length>1||done?`<div class="cur"><span class="sw" style="background:${esc(cur.s.c)}"></span><span>${done?t('finished'):t('nowCol')(esc(cur.s.n),cur.b-S.row)}</span></div>`:''}
     ${agoHtml(S)}${TIME.html(S,c)}${done?`<button class="livebtn" onclick="FIN.show(S.id)">🎉 ${DB.lang==='de'?'Fertig-Übersicht':'Finish summary'}</button>`:''}
@@ -97,10 +98,10 @@ function jumpGo(){const i=$('jr'),v=parseInt(i.value,10);if(isNaN(v))return i.fo
   setRow(n-1);toast(DB.lang==='de'?`Jetzt Reihe ${n}`:`Now row ${n}`)}
 
 // ===== Reihen-Merker: Hinweis, wenn eine Reihe anders ist als die gleichen davor =====
-function rowKey(c,i){const r=c.R[i];if(!r)return null;const seg=c.segs.find(g=>i+1<=g.b);if(c.wk)return r.k==='skinny'?'skinny|':r.k+'|'+(seg?seg.idx:0);return (c.sop?r.k:'body')+'|'+(seg?seg.idx:0)}
+function rowKey(c,i){const r=c.R[i];if(!r)return null;const seg=c.segs.find(g=>i+1<=g.b);if(c.gm)return r.key+'|'+(seg?seg.idx:0);if(c.wk)return r.k==='skinny'?'skinny|':r.k+'|'+(seg?seg.idx:0);return (c.sop?r.k:'body')+'|'+(seg?seg.idx:0)}
 function rowLabel(c,i){const de=DB.lang==='de',r=c.R[i],seg=c.segs.find(g=>i+1<=g.b);
   const L=de?{skinny:'dünne Streifen (Farbwechsel alle 2 Reihen)',chunky:'dicke Streifen (6 Reihen je Farbe)',plain:'normale Reihe',inc:'Zunahme-Reihe',dec:'Abnahme-Reihe',end1:'Spitze: 1. Reihe mit Abnahme',end2:'Spitze',bo:'Abketten',body:'normale Reihe'}:{skinny:'skinny stripes (switch colour every 2 rows)',chunky:'chunky stripes (6 rows per colour)',plain:'plain row',inc:'increase row',dec:'decrease row',end1:'tip: first row with decrease',end2:'tip',bo:'bind off',body:'plain row'};
-  const base=L[c.sop||c.wk?(r.k==='bo'?'bo':r.k):'body'],col=S.stripes.length>1&&seg&&r.k!=='skinny'?seg.s.n:'';
+  const base=c.gm?GMK[DB.lang][r.key]:L[c.sop||c.wk?(r.k==='bo'?'bo':r.k):'body'],col=S.stripes.length>1&&seg&&r.k!=='skinny'?seg.s.n:'';
   if(col&&i>0&&rowKey(c,i-1).split('|')[0]===rowKey(c,i).split('|')[0]&&rowKey(c,i-1)!==rowKey(c,i))return (de?'Farbwechsel zu ':'colour change to ')+col;
   return base+(col?(de?', Farbe ':', colour ')+col:'')}
 function rowAlert(c,row){ // row = Reihe, die als nächstes gestrickt wird (Index)
@@ -119,8 +120,8 @@ const FOC={on:false,ctl:null,
   stop(){if(this.ctl){this.ctl.stop();this.ctl=null}},
   info(){const c=calc(),de=DB.lang==='de',done=S.row>=c.total,r=c.R[Math.min(S.row,c.total-1)];
     const nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);
-    const det=c.wk&&!done?wkInfo(c,r):c.sop&&!done?`${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}`:`${rowLabel(c,Math.min(S.row,c.total-1))}`;
-    const txt=done?'':c.sop?rowText(r):c.wk?wkText(c,S.row):'';
+    const det=c.gm&&!done?gmInfo(c,r):c.wk&&!done?wkInfo(c,r):c.sop&&!done?`${t('sec')[r.sec]} · ${repLabel(r)} · ${side(r)} · ${onNeedle(r.n)}`:`${rowLabel(c,Math.min(S.row,c.total-1))}`;
+    const txt=done?'':c.gm?gmText(c,r):c.sop?rowText(r):c.wk?wkText(c,S.row):'';
     return `${alertHtml(c)}${done?'':`<section class="fzx k1"><p class="cap">${de?'Wo du bist':'Where you are'}</p><p class="info">${det}</p></section>`}
       ${txt?`<section class="fzx k2"><p class="cap">${de?'Anleitung':'Pattern'}</p><p class="txt">${txt}</p></section>`:''}${HIST.html(S)}`},
   head(){const c=calc(),de=DB.lang==='de',done=S.row>=c.total,nxt=Math.min(S.row+1,c.total),pc=Math.round(S.row/c.total*100);

@@ -10,12 +10,23 @@ const SZ={s:{R1:22,R2:21,len:80,wid:11,g:20,g2:32},l:{R1:27,R2:26,len:102,wid:13
 const WZ={big:{cast:36,half:204,len:203,wid:11.5,yd:270,g:200},little:{cast:24,half:108,len:109,wid:7.5,yd:135,g:100}};
 const DEFW={tpl:'weekend',name:'Weekend Scarf',size:'big',tech:'knit',needle:5,mpb:119,w:11.5,l:203,sts:31.5,rows:19.7,row:0,stripes:[{n:'Orange',c:'#e8742a',r:2},{n:'Banana',c:'#f3d36b',r:2}]};
 const DEFS={tpl:'sophie',name:'Sophie Scarf',size:'s',needle:3.5,mpb:115,row:0,stripes:[{n:'Rosa',c:'#f4a6c6',r:40}]};
+// Córdoba Top (Alma Patterns): von oben nach unten, Raglan, glatt re. Maschenprobe 21 M x 32 R = 10 x 10 cm, Nadel 3,5 mm
+// Je Größe xxs, xs, s, m, l, xl, xxl. Prüfung: co + 8·y = 2·f + 2·sl + bk + 4 (4 Raglanmaschen)
+const CZ=['xxs','xs','s','m','l','xl','xxl'];
+const CD={bust:[78,82,86,90,94,98,102],m:[550,600,650,700,750,800,850],co:[118,120,128,134,134,124,134],
+  a:[15,15,16,16,16,14,15],b:[20,21,23,25,25,23,26],c:[42,42,44,46,46,44,46],d:[16,16,17,17,17,15,16],
+  y:[17,19,20,20,22,24,25],f:[33,35,37,37,39,39,41],sl:[54,59,63,65,69,71,76],bk:[76,80,84,86,90,92,96],
+  u:[4,4,4,6,6,8,8],ni:[3,3,3,4,4,5,5],len:[34,35,35,36,36,37,37],pu:[7,7,7,9,9,11,11],op:[60,60,64,66,70,76,80],cord:[140,140,150,150,150,160,160],
+  div:[200,250,250,250,300,300,300],ani:[150,150,200,200,200,200,250],org:[150,150,150,200,200,200,200]};
+// pat: Merkmal, das auch alte Versionen der Seite beim Speichern behalten (die kennen tpl 'cordoba' noch nicht)
+const DEFC={tpl:'cordoba',pat:'cordoba',name:'Córdoba Top',size:'s',tech:'knit',needle:3.5,mpb:140,l:35,sts:21,rows:32,row:0,stripes:[{n:'Rosa',c:'#f4a6c6',r:999}]};
 const DEFST={tpl:'stripe',name:'Streifenschal',tech:'knit',w:20,l:150,sts:20,rows:36,mpb:125,needle:4.5,row:0,stripes:[{n:'Rosa',c:'#f4a6c6',r:24},{n:'Babyblau',c:'#a9d6f5',r:12},{n:'Perlweiß',c:'#fff4f8',r:24}]};
 const DEFDB={lang:'de',theme:'rose',abbr:true,live:false,liveView:'flat',cur:0,projects:[DEFS],stash:[{n:'Rosa',c:'#f4a6c6',b:1,m:115,nd:3.5}],shop:[]};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const byId=id=>DB.projects.find(q=>q.id===id);
 const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const fixP=p=>{const q=p.tpl==='sophie'?{...clone(DEFS),...p}:p.tpl==='weekend'?{...clone(DEFW),...p}:{...clone(DEFST),...p,tpl:'stripe'};if(!q.id)q.id=rid();return q};
+const fixP=p=>{if(p.pat==='cordoba'||p.tpl==='cordoba'){const q={...clone(DEFC),...p,tpl:'cordoba',pat:'cordoba'};if(!CZ.includes(q.size))q.size='s';if(!q.id)q.id=rid();return q}
+  const q=p.tpl==='sophie'?{...clone(DEFS),...p}:p.tpl==='weekend'?{...clone(DEFW),...p}:{...clone(DEFST),...p,tpl:'stripe'};if(!q.id)q.id=rid();return q};
 
 // Farbmuster (Einstellungen → Farbmuster)
 const THEMES={

@@ -31,6 +31,7 @@ Neue Migration in `supabase/migrations/`, Test in `supabase/tests/`. Zerstöreri
 | 3D (Tab, Live, großer Zähler) | `3d` |
 | Seiten, Vorlagen, Garnlager, Farbwahl, Export/Import, Farbmuster | `alle-seiten angebote` |
 | Anmelden, Sync, Knit-Along, Tausch, Konto, Einladungscode | `sync knitalong tausch konto einladungscode` |
+| Córdoba Top (Vorlage mit Größen) | `cordoba` |
 | Tutorial (Tour) | `tutorial` |
 | Offline / Service Worker | `offline` |
 

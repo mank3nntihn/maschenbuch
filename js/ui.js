@@ -9,7 +9,7 @@ function render(){
   $('ttl').textContent=tab==='home'?'Maschenbuch':S.name;$('ttl').style.cursor='pointer';$('ttl').onclick=()=>{tab='home';render();scrollTo(0,0)};
   $('mb').setAttribute('aria-label',t('menu'));
   const M=DB.abbr?(DB.lang==='de'?'M':'st'):(DB.lang==='de'?'Maschen':'stitches');
-  $('sub').textContent=c.wk?(DB.lang==='de'?`Stricken, 2x2-Rippen, ${S.size==='big'?'Groß':'Klein'} ${c.z.len} cm, ${c.cast} M, ${fmt(S.needle)} mm`:`Knitting, 2x2 rib, ${S.size==='big'?'big':'little'} ${c.z.len} cm, ${c.cast} st, ${fmt(S.needle)} mm`):c.sop?`${t('subS')}, ${S.size==='s'?t('small'):t('large')} ${c.z.len} cm, ${fmt(S.needle)} mm`:`${S.tech==='knit'?t('subK'):t('subC')}, ${S.w} x ${S.l} cm, ${c.cast} ${M}, ${fmt(S.needle)} mm`;
+  $('sub').textContent=c.gm?(DB.lang==='de'?`Stricken, Top von oben, Größe ${S.size.toUpperCase()}, ${fmt(S.needle)} mm`:`Knitting, top-down top, size ${S.size.toUpperCase()}, ${fmt(S.needle)} mm`):c.wk?(DB.lang==='de'?`Stricken, 2x2-Rippen, ${S.size==='big'?'Groß':'Klein'} ${c.z.len} cm, ${c.cast} M, ${fmt(S.needle)} mm`:`Knitting, 2x2 rib, ${S.size==='big'?'big':'little'} ${c.z.len} cm, ${c.cast} st, ${fmt(S.needle)} mm`):c.sop?`${t('subS')}, ${S.size==='s'?t('small'):t('large')} ${c.z.len} cm, ${fmt(S.needle)} mm`:`${S.tech==='knit'?t('subK'):t('subC')}, ${S.w} x ${S.l} cm, ${c.cast} ${M}, ${fmt(S.needle)} mm`;
   if(tab==='home')$('sub').textContent=DB.lang==='de'?`${DB.projects.length} ${DB.projects.length===1?'Projekt':'Projekte'}`:`${DB.projects.length} project(s)`;
   V3.stop();LIVE.stop();FOC.stop();document.body.classList.toggle('focus',FOC.on);
   if(FOC.on){$('app').innerHTML=FOC.html();FOC.start();syncWake&&syncWake();return}
@@ -71,7 +71,7 @@ function renderMenu(){
   $('side').innerHTML=`<button class="x" onclick="menu(0)" aria-label="${t('close')}">✕</button>
   <h2>${t('project')}</h2>
   <select onchange="pickP(this.value)" aria-label="${t('project')}">${DB.projects.map((p,i)=>p.arch&&i!==DB.cur?'':`<option value="${i}" ${i===DB.cur?'selected':''}>${esc(p.name)}${p.arch?' ✓':''}</option>`).join('')}</select>
-  <label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
+  <label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="cordoba" ${newTpl==='cordoba'?'selected':''}>Córdoba Top (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
   <div class="three"><button onclick="newP()">+ ${t('newP')}</button><button onclick="renP()">${t('rename')}</button><button onclick="delP()">${t('del')}</button></div>
   ${L('home','🏠 '+(DB.lang==='de'?'Alle Projekte':'All projects'))}${L('count',t('tabsGo'))}
   <h2 style="margin-top:24px">Extras</h2>
@@ -95,7 +95,7 @@ function vHome(){const de=DB.lang==='de',keep=S;
       <div class="bar">${c.segs.map(g=>`<i style="flex:${g.n};background:${esc(g.s.c)}"></i>`).join('')}<b style="width:${100-p.row/c.total*100}%"></b></div>
       <p>${fin?(de?`Alle ${c.total} Reihen fertig`:`All ${c.total} rows done`):de?`Reihe ${p.row+1} von ${c.total}`:`Row ${p.row+1} of ${c.total}`}${a?` · ${de?'zuletzt':'last'} <span class="agot" data-t="${p.last}">${a}</span>`:''}</p></button>`}).join('');
   return `${SB.card()}<section class="card"><h2>${de?'Meine Projekte':'My projects'}</h2><p class="mu">${de?'Tippe auf ein Projekt, um weiterzumachen.':'Tap a project to continue.'}</p>${SYNC.html(1)}</section>${cards}${FIN.homeCard()}${KAL.homeCard()}
-  <section class="card"><label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
+  <section class="card"><label>${t('tpl')}</label><select onchange="newTpl=this.value"><option value="sophie" ${newTpl==='sophie'?'selected':''}>${t('tplS')}</option><option value="weekend" ${newTpl==='weekend'?'selected':''}>Weekend Scarf (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="cordoba" ${newTpl==='cordoba'?'selected':''}>Córdoba Top (${DB.lang==='de'?'Anleitung':'pattern'})</option><option value="stripe" ${newTpl==='stripe'?'selected':''}>${t('tplT')}</option></select>
   <button class="pri" onclick="newP()">+ ${de?'Neues Projekt':'New project'}</button></section>`}
 
 // ===== Eigene Dialoge (Bestätigen / Name eingeben / Hinweis) =====

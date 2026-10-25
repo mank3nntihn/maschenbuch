@@ -260,6 +260,7 @@ c=pow(clamp(c,0.,1.),vec3(1./2.2));o=vec4(c*uA,uA);}`));
 
 // ---- 3D-Ansicht als wiederverwendbares Bauteil (3D-Tab und Live-Ansicht im Zähler) ----
 function View3D(box,cap,o){
+  if(S&&S.tpl==='cordoba')return TopView(box,cap,o); // Oberteil: Schnitt-Vorschau statt 3D-Schal
   if(window.__ohne3d){box.innerHTML='';return null} // nur in den Tests gesetzt: spart dort das langsame Zeichnen ohne Grafikkarte
   const cv=document.createElement('canvas');box.appendChild(cv);
   let R=null;try{R=GLR(cv)}catch(e){R=null}
@@ -324,7 +325,7 @@ function View3D(box,cap,o){
 }
 
 function v3d(){
-  return `<section class="card"><div class="seg"><button class="${V3.view==='flat'?'on':''}" onclick="V3.setView('flat')">${t('flat')}</button><button class="${V3.view==='worn'?'on':''}" onclick="V3.setView('worn')">${t('worn')}</button></div>
+  return `<section class="card">${S.tpl==='cordoba'?'':`<div class="seg"><button class="${V3.view==='flat'?'on':''}" onclick="V3.setView('flat')">${t('flat')}</button><button class="${V3.view==='worn'?'on':''}" onclick="V3.setView('worn')">${t('worn')}</button></div>`}
   <div class="seg"><button class="${V3.mode==='all'?'on':''}" onclick="V3.set('all')">${t('fin')}</button><button class="${V3.mode==='now'?'on':''}" onclick="V3.set('now')">${t('cur')}</button></div>
   <div id="gl" class="gl"></div>
   <div class="seg" style="margin-top:10px"><button onclick="V3.go(0)">${t('whole')}</button><button onclick="V3.go(1)">${t('toRow')}</button></div>
@@ -342,3 +343,24 @@ const LIVE={ctl:null,
   stop(){if(this.ctl){this.ctl.stop();this.ctl=null}},
   start(){this.ctl=View3D($('lgl'),$('lglt'),{worn:DB.liveView==='worn',mode:'now',live:true,prog:$('lvp'),onMode:m=>{const b=$('lvbtn');if(b)b.textContent=m==='follow'?t('liveWhole'):t('liveBack')}});window.__lv=this.ctl&&this.ctl.st;window.__lvctl=this.ctl}
 };
+
+// ---- Oberteil (Córdoba Top): Schnitt-Vorschau, füllt sich von oben nach unten mit dem Fortschritt ----
+function TopView(box,cap,o){o=o||{};
+  const cid="tvc"+Math.random().toString(36).slice(2,7);
+  const draw=()=>{const c=calc(),de=DB.lang==="de",R=c.R,ix=k=>R.findIndex(r=>r.k===k),bEnd=ix('bb'),all=o.mode==='all';
+    const p=all?1:Math.min(1,S.row/(bEnd+1)),done=k=>all||S.row>ix(k),col=esc((S.stripes[0]||{}).c||'#f4a6c6');
+    const shape='M70,22 Q100,44 130,22 L160,32 L186,62 L169,79 L150,67 L148,204 L52,204 L50,67 L31,79 L14,62 L40,32 Z';
+    const y0=20,h=(204-y0)*p,pct=Math.round(Math.min(S.row,c.total)/c.total*100);
+    box.innerHTML=`<div class="topv"><svg viewBox="0 0 200 222" role="img" aria-label="${de?'Schnitt des Tops':'Top schematic'}">
+      <defs><clipPath id="${cid}"><rect x="0" y="${y0}" width="200" height="${h.toFixed(1)}"/></clipPath></defs>
+      <path d="${shape}" class="tv0"/><path d="${shape}" fill="${col}" clip-path="url(#${cid})"/>
+      ${done('rb')?`<path d="M186,62 L169,79" class="tvb" stroke="${col}"/>`:''}${done('lb')?`<path d="M14,62 L31,79" class="tvb" stroke="${col}"/>`:''}
+      ${done('ob')?`<path d="M96,30 L104,30" class="tvb" stroke="${col}"/>`:''}
+      <path d="${shape}" class="tv1"/>
+      ${done('c1')?`<path d="M70,24 Q100,46 130,24 M100,35 q-6,10 -10,20 M100,35 q6,10 10,20" class="tvc"/>`:''}
+      ${!all&&S.row<=bEnd&&p>0?`<line x1="44" x2="156" y1="${(y0+h).toFixed(1)}" y2="${(y0+h).toFixed(1)}" class="tvl"/>`:''}
+    </svg></div>`;
+    if(cap)cap.textContent=(de?`Größe ${S.size.toUpperCase()} · ${pct} % geschafft · Schnitt-Vorschau (3D gibt es für Schals)`:`Size ${S.size.toUpperCase()} · ${pct} % done · schematic (3D is available for scarves)`);
+    if(o.prog)o.prog.textContent=pct+' %'};
+  draw();
+  return{st:{},setRow:draw,go:draw,toggle:()=>{},stop:()=>{box.innerHTML=''}}}
