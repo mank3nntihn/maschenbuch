@@ -26,7 +26,7 @@ module.exports={name:'Córdoba Top: Vorlage mit 7 Größen',async run(h,ok){
   await p.evaluate(()=>{tab='steps';render()});const st=await p.locator('main').innerText();
   ok(['Halsblende','Passe','Ärmel stilllegen','Ausschnitt','Körper','Rechter Ärmel','Linker Ärmel','Ausschnittkante','Kordel','Alma Patterns'].every(x=>st.includes(x)),'Anleitung: alle Abschnitte und Hinweis auf Alma Patterns');
   await p.evaluate(()=>{tab='wool';render()});ok(/700 m/.test(await p.locator('main').innerText())&&/Divina/.test(await p.locator('main').innerText()),'Wolle: 700 m für M, Garnvorschläge');
-  await p.evaluate(()=>{V3.mode='now';tab='3d';render()});ok(await p.locator('#gl .topv svg').count()===1&&await p.locator('#app .seg button',{hasText:'Am Model'}).count()===0,'3D-Tab: Schnitt-Vorschau statt Schal');
+  await p.evaluate(()=>{V3.mode='now';tab='3d';render()});ok(await p.locator('#gl .topv svg').count()===1&&await p.locator('#app .seg button',{hasText:'Am Model'}).count()===0,'3D-Tab ohne WebGL: Schnitt-Vorschau als Ersatz');
   // Großer Zähler: Kästen und Vorschau wachsen mit
   await p.evaluate(()=>{S.row=80;save();FOC.open()});
   const h0=await p.evaluate(()=>+document.querySelector('#fgl clipPath rect').getAttribute('height'));await p.locator('.fz .plus').click();

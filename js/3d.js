@@ -80,9 +80,12 @@ function partSDF(P){
       return p=>{const x=I[0]*p[0]+I[4]*p[1]+I[8]*p[2]+I[12],y=I[1]*p[0]+I[5]*p[1]+I[9]*p[2]+I[13],z=I[2]*p[0]+I[6]*p[1]+I[10]*p[2]+I[14];return(Math.sqrt(x*x+y*y+z*z)-1)*m}}
     if(q.t==='cyl'){const ax=q.a[0],ay=q.a[1],az=q.a[2],dx=q.b[0]-ax,dy=q.b[1]-ay,dz=q.b[2]-az,len=Math.hypot(dx,dy,dz),Yx=dx/len,Yy=dy/len,Yz=dz/len;
       return p=>{const wx=p[0]-ax,wy=p[1]-ay,wz=p[2]-az,hh=wx*Yx+wy*Yy+wz*Yz,rx=wx-Yx*hh,ry=wy-Yy*hh,rz=wz-Yz*hh,f=Math.min(1,Math.max(0,hh/len));return Math.max(Math.sqrt(rx*rx+ry*ry+rz*rz)-(q.ra+(q.rb-q.ra)*f),-hh,hh-len)}}
+    // Drehkörper: echter Abstand zum Profil (Radius, Höhe) – auch auf flachen Schrägen wie den Schultern richtig; ·zs hält ihn konservativ
     const pts=q.pts,y0=pts[0][1],y1=pts[pts.length-1][1],zs=q.zs;
-    return p=>{const y=p[1];if(y<y0-1||y>y1+1)return Math.max(y0-y,y-y1);let r=0;for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1];if(y>=a[1]&&y<=b[1]){r=b[1]>a[1]?a[0]+(b[0]-a[0])*(y-a[1])/(b[1]-a[1]):Math.max(a[0],b[0]);break}}
-      return Math.max((Math.sqrt(p[0]*p[0]+p[2]*p[2]/(zs*zs))-r)*zs,y0-y,y-y1)}
+    return p=>{const y=p[1],rho=Math.sqrt(p[0]*p[0]+p[2]*p[2]/(zs*zs));let d=1e9,r=-1;
+      for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],ex=b[0]-a[0],ey=b[1]-a[1],t=Math.max(0,Math.min(1,((rho-a[0])*ex+(y-a[1])*ey)/(ex*ex+ey*ey||1)));
+        d=Math.min(d,Math.hypot(rho-a[0]-ex*t,y-a[1]-ey*t));if(r<0&&y>=a[1]&&y<=b[1])r=ey>0?a[0]+ex*(y-a[1])/ey:Math.max(a[0],b[0])}
+      return(r>=0&&rho<r?-d:d)*zs}
   })}
 const sdf=(fs,p)=>{let d=1e9;for(const f of fs){const v=f(p);if(v<d)d=v}return d};
 const sdfGrad=(fs,p)=>{const e=.004;return vnorm([sdf(fs,[p[0]+e,p[1],p[2]])-sdf(fs,[p[0]-e,p[1],p[2]]),sdf(fs,[p[0],p[1]+e,p[2]])-sdf(fs,[p[0],p[1]-e,p[2]]),sdf(fs,[p[0],p[1],p[2]+e])-sdf(fs,[p[0],p[1],p[2]-e])])};
@@ -214,6 +217,95 @@ function buildScene(c,worn){
   return{F,R0:F.R0||0,N,kinds,under:{geo:{p:up,n:un,i:ui},vcol:uc},meshes,centers,fs,rowW,cw,ch};
 }
 
+// ---- Oberteil (Córdoba Top) am Model: Maschen Runde für Runde um den Körper ----
+// Passe und Halsblende liegen über Oberkörper, Schultern und Oberarmen (T-Shirt des Models), der Körper nur um den Rumpf.
+// Vor dem Schließen zur Runde bleibt vorne in der Mitte der Schlitz offen. Die Lage der Maschen wird je Größe/Länge zwischengespeichert.
+const TCACHE={};
+function topLayout(c){
+  const z=c.z,R=c.R,N=c.total,cw=1/c.g.sts,ch=1/c.g.rows,key=z.size+'|'+N,CLR=.03;
+  if(TCACHE[key])return TCACHE[key];
+  const parts=avatarParts(),shirt=parts.filter(q=>q.col==='#f4f1ec'),torso=parts.filter(q=>q.t==='lathe');
+  // Rumpf, Schultern und Oberarme weich verschmolzen: runde Schulterpartie statt Kanten (smooth minimum)
+  const smin=(a,b,k)=>{const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*.25},yb=partSDF(shirt),fsY=[p=>{let d=1e9;for(const f of yb)d=smin(d,f(p),.6);return d}],fsB=partSDF(torso);
+  // Punkt auf der Oberfläche: vom Achsenpunkt a in Richtung d nach innen tasten, bis der Abstand CLR erreicht ist
+  const hit=(fs,a,d,r0)=>{let r=r0;for(let k=0;k<60;k++){const p=vas(a,d,r),s=sdf(fs,p)-CLR;if(s<.002)break;r-=Math.max(s,.004);if(r<.05){r=.05;break}}return vas(a,d,r)};
+  const K=144,ring=(fs,y)=>{const P=[];for(let k=0;k<K;k++){const th=k/K*2*Math.PI;P.push(hit(fs,[0,y,0],[Math.sin(th),0,Math.cos(th)],4))}return P};
+  const armRing=(s,tt)=>{const A=[s*2.0,13.7,0],B=[s*2.32,12.3,0],ax=vnorm(vs(B,A)),o=vas(A,vs(B,A),tt),u=vnorm(vcross(ax,[0,0,1])),w=vcross(u,ax),fs=partSDF(shirt.filter(q=>q.t==='cyl'));
+    const P=[];for(let k=0;k<K;k++){const th=k/K*2*Math.PI;P.push(hit(fs,o,vnorm(va(vk(w,Math.cos(th)),vk(u,Math.sin(th)))),1.2))}return P};
+  // Stellen entlang eines geschlossenen Rings nach Bogenlänge
+  const arc=P=>{const L=[0];for(let k=1;k<=P.length;k++)L.push(L[k-1]+vlen(vs(P[k%P.length],P[k-1])));return L};
+  const at=(P,L,f)=>{const T=L[L.length-1],s=((f%1)+1)%1*T;let k=0;while(k<P.length-1&&L[k+1]<s)k++;const a=P[k],b=P[(k+1)%P.length],q=(s-L[k])/Math.max(1e-9,L[k+1]-L[k]);return{p:va(a,vk(vs(b,a),q)),t:vnorm(vs(b,a)),k}};
+  // Passe: für jede Richtung ein senkrechtes Profil (Strahlen aus der Brustmitte), vom Halsausschnitt bis zur Achselhöhe.
+  // Die Reihen werden gleichmäßig auf jedes Profil verteilt – vorne über die Brust, seitlich über Schulter und Oberarm.
+  const yUA=12.78,C0=[0,13.1,0],prof=[],neckR=ring(partSDF(shirt.filter(q=>q.t==='lathe')),14.3).map(p=>Math.hypot(p[0],p[2]));
+  for(let k=0;k<K;k++){const th=k/K*2*Math.PI,P=[];let started=false;
+    for(let j=0;j<=240;j++){const ph=(88-j*.6)*Math.PI/180,d=[Math.sin(th)*Math.cos(ph),Math.sin(ph),Math.cos(th)*Math.cos(ph)],p=hit(fsY,C0,d,4.5);
+      if(!started){if(p[1]>14.32&&Math.hypot(p[0],p[2])<neckR[k]*.99)continue;started=true}P.push(p);if(p[1]<=yUA)break}
+    const L=[0];for(let j=1;j<P.length;j++)L.push(L[j-1]+vlen(vs(P[j],P[j-1])));prof.push({P,L})}
+  const profAt=(k,t)=>{const{P,L}=prof[k],s=t*L[L.length-1];let j=0;while(j<P.length-2&&L[j+1]<s)j++;const q=(s-L[j])/Math.max(1e-9,L[j+1]-L[j]);return va(P[j],vk(vs(P[j+1],P[j]),Math.max(0,Math.min(1,q))))};
+  const S_=[],U=[],F=[];
+  const stitch=(fs,p,t,f,row,kind,up,l)=>{let n=sdfGrad(fs,p);const W=vnorm(vs(t,vk(n,vdot(t,n))));let T=vcross(W,n);if(vdot(T,up||[0,1,0])<0)T=vk(T,-1);
+    S_.push({P:p,W,N:n,T,f,l:l||1,row,kind})};
+  const iSd=R.findIndex(r=>r.k==='sd'),iJ=R.findIndex(r=>r.k==='jr'),gap0=2*z.ni+4;
+  let yJoin=0,neckRing=null,gapHalf=0;
+  for(let i=0;i<N;i++){const r=R[i];
+    if(['neck','yoke','split','neckinc','join','body'].includes(r.sec)){
+      const body=i>=iSd,fs=body?fsB:fsY,Nt=5+(iSd-10),tAt=j=>(j<10?j*.5+.25:5+(j-10)+.5)/Nt;
+      let P,sp=null;
+      if(body)P=ring(fs,yUA-(i-iSd+.4)*ch*1.05);
+      else{const t=tAt(i),dt=(i<10?.5:1)/Nt;P=prof.map((_,k)=>profAt(k,t));
+        // Maschenlänge: Abstand der Reihen auf diesem Profil im Verhältnis zur normalen Reihenhöhe
+        sp=prof.map(q=>Math.max(.8,Math.min(3,q.L[q.L.length-1]*dt/((i<10?.5:1)*ch))))}
+      const L=arc(P),y=P[0][1];if(i===2)neckRing={P,L,y};
+      const g=i<iSd?gap0:i<iJ?Math.max(0,gap0-2*(R[i].rep||0)-(R[i].k==='xp'?0:0)):0,tot=r.n+g,f=L[K]/tot/cw;
+      if(i===iJ-1){yJoin=y;gapHalf=g/tot*L[K]/2}
+      for(let k=0;k<r.n;k++){const a=at(P,L,(g/2+k+.5)/tot);stitch(fs,a.p,a.t,f,i,r.k==='nf'?'B':'V',null,sp?sp[a.k]:1)}
+      const u=[];for(let k=0;k<=24;k++){const a=at(P,L,(g/2+k/24*r.n)/tot);u.push(vas(a.p,sdfGrad(fs,a.p),-cw*.16))}U.push({row:i,grp:body?1:0,pts:u});
+      F[i]={P:at(P,L,g?g/2/tot:0).p}}
+    else if(r.sec==='sleeveR'||r.sec==='sleeveL'){const s=r.sec==='sleeveR'?-1:1,tt=.72+(r.rr-1)*ch*1.3/1.43,P=armRing(s,tt),L=arc(P),f=L[K]/r.n/cw,fs=partSDF(shirt.filter(q=>q.t==='cyl'));
+      for(let k=0;k<r.n;k++){const a=at(P,L,(k+.5)/r.n);stitch(fs,a.p,a.t,f,i,'V',vnorm([s*-.23,1,0]))}
+      const u=[];for(let k=0;k<=24;k++){const a=at(P,L,k/24);u.push(vas(a.p,sdfGrad(fs,a.p),-cw*.16))}U.push({row:i,grp:r.sec==='sleeveR'?2:3,pts:u});F[i]={P:at(P,L,.25).p}}
+    else if(r.sec==='open'){// Kante um den Schlitz: links hinunter, unten quer, rechts hinauf; jede Reihe wächst in den Schlitz hinein
+      const d=(r.rr-.5)*ch*.9,gx=Math.max(.02,gapHalf-d),yb=yJoin+d,yt=14.28,front=(x,y)=>hit(fsY,[x,y,0],[0,0,1],3);
+      const path=[];for(let k=0;k<=10;k++)path.push(front(-gx,yt-(yt-yb)*k/10));for(let k=1;k<=4;k++)path.push(front(-gx+2*gx*k/5,yb));for(let k=0;k<=10;k++)path.push(front(gx,yb+(yt-yb)*k/10));
+      const L=[0];for(let k=1;k<path.length;k++)L.push(L[k-1]+vlen(vs(path[k],path[k-1])));const T=L[L.length-1],f=T/r.n/cw;
+      for(let k=0;k<r.n;k++){const s=(k+.5)/r.n*T;let j=0;while(j<path.length-2&&L[j+1]<s)j++;const a=path[j],b=path[j+1],q=(s-L[j])/Math.max(1e-9,L[j+1]-L[j]);
+        stitch(fsY,va(a,vk(vs(b,a),q)),vnorm(vs(b,a)),f,i,'V',[0,0,1])}
+      F[i]={P:path[12]}}
+    else if(r.k==='c1'&&neckRing){// Kordel: durch den Tunnel der Halsblende, vorne zwei hängende Enden
+      const P=neckRing.P.map(p=>vas(p,vnorm([p[0],0,p[2]]),.02)),L=arc(P),n=Math.round(L[K]/(cw*.9));
+      for(let k=0;k<n;k++){const a=at(P,L,(k+.5)/n);stitch(fsY,a.p,a.t,1,i,'C')}
+      const top=at(P,L,0).p;for(const s of[-1,1])for(let k=0;k<26;k++){const q=k/26,p=[top[0]+s*(.05+q*.08),top[1]-.04-q*.75,top[2]+.06+Math.sin(q*3)*.03];stitch(fsY,hit(fsY,[p[0],p[1],0],[0,0,1],3),[0,-1,0],1,i,'C',[1,0,0])}
+      F[i]={P:top}}
+    else F[i]={P:(F[i-1]||{P:[0,13,1]}).P}}
+  return TCACHE[key]={S:S_,U,F}}
+function buildTopScene(c){
+  const L=topLayout(c),N=c.total,cw=1/c.g.sts,ch=1/c.g.rows,rnd=rng(17);
+  // Viele Maschen (Oberteil): einfachere Form je Masche, damit es auch auf älteren Handys flüssig bleibt
+  const det=L.S.length<8000?2:L.S.length<16000?1:0,Ug=gSphere([6,8,12][det],[3,5,7][det]),pt=(px,py,pz,rx,ry,rz,sx,sy,sz)=>gXf(Ug,M4.trs([px,py,pz],[rx,ry,rz],[sx,sy,sz]));
+  const G={},v=[];for(const s of[-1,1])for(const q of[-1,1])v.push(pt(s*cw*.22+q*cw*.05,q*cw*.025,q*ch*.05,0,s*.5,q*.32,cw*.12,cw*.2,ch*.68));G.V=gMerge(v);
+  const b=[];for(const q of[-1,1])b.push(pt(0,cw*.02,q*ch*.08,0,q*.12,q*.15,cw*.52,cw*.19,ch*.17));G.B=gMerge(b);
+  const k2=[];for(const q of[-1,1])k2.push(pt(q*cw*.18,cw*.18,0,0,q*.45,q*.5,cw*.3,cw*.42,ch*.95));G.C=gMerge(k2);
+  const rowCol=[];c.segs.forEach(q=>{for(let i=q.a;i<=q.b;i++)rowCol[i-1]=lin(q.s.c)});
+  const B={};
+  for(const s of L.S){const key=s.kind;B[key]=B[key]||{geo:G[key],m:[],c:[],rows:[]};const sz=.95+rnd()*.1,col=rowCol[s.row]||[1,.5,.6];
+    const M=M4.mul(M4.mul(M4.basis(s.W,s.N,s.T,s.P),M4.ry((rnd()-.5)*.14)),M4.sc(sz*s.f,sz,sz*s.l));
+    for(const x of M)B[key].m.push(x);const br=.88+rnd()*.22;B[key].c.push(col[0]*br,col[1]*br,col[2]*br);B[key].rows.push(s.row)}
+  const kinds=Object.values(B).map(b=>{const n=b.rows.length,mR=new Float32Array(n*16),cR=new Float32Array(n*3);
+    for(let j=0;j<n;j++){const s=n-1-j;mR.set(b.m.slice(s*16,s*16+16),j*16);cR.set(b.c.slice(s*3,s*3+3),j*3)}
+    return{geo:b.geo,m:b.m,c:b.c,mR,cR,rows:b.rows}});
+  // Unterlage: Streifen zwischen aufeinanderfolgenden Runden derselben Gruppe
+  const up=[],un=[],uc=[],ui=[],idxEnd=new Array(N).fill(0);let prev={};
+  for(const u of L.U){const base=up.length/3,col=vk(rowCol[u.row]||[1,.5,.6],.8);
+    for(const p of u.pts){up.push(...p);un.push(0,1,0);uc.push(...col)}
+    const pv=prev[u.grp];if(pv!=null)for(let k=0;k<u.pts.length-1;k++){const a=pv+k,b2=base+k;ui.push(a,a+1,b2,a+1,b2+1,b2)}
+    prev[u.grp]=base;idxEnd[u.row]=ui.length}
+  for(let i=1;i<N;i++)idxEnd[i]=Math.max(idxEnd[i],idxEnd[i-1]);
+  // Model ohne T-Shirt-Ärmel: unter den kurzen Strick-Ärmeln ist der Arm zu sehen
+  const meshes=[],byCol={};avatarParts().filter(q=>!(q.col==='#f4f1ec'&&q.t!=='lathe')).forEach(q=>{const k=q.col+'|'+(q.alpha||1);(byCol[k]=byCol[k]||[]).push(partGeo(q))});
+  Object.entries(byCol).forEach(([k,list])=>{const[col,a]=k.split('|');meshes.push({geo:gMerge(list),col:lin(col),alpha:+a})});
+  return{F:L.F,R0:0,N,kinds,under:{geo:{p:up,n:un,i:ui},vcol:uc},meshes,centers:[],rowW:n=>n*cw,cw,ch,home:[0,12,0],underN:nd=>nd>0?idxEnd[Math.min(nd,N)-1]:0}}
+
 // ---- WebGL2 ----
 function GLR(cv){
   const gl=cv.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true});if(!gl)return null;
@@ -260,21 +352,22 @@ c=pow(clamp(c,0.,1.),vec3(1./2.2));o=vec4(c*uA,uA);}`));
 
 // ---- 3D-Ansicht als wiederverwendbares Bauteil (3D-Tab und Live-Ansicht im Zähler) ----
 function View3D(box,cap,o){
-  if(S&&S.tpl==='cordoba')return TopView(box,cap,o); // Oberteil: Schnitt-Vorschau statt 3D-Schal
-  if(window.__ohne3d){box.innerHTML='';return null} // nur in den Tests gesetzt: spart dort das langsame Zeichnen ohne Grafikkarte
+  const gm=S&&S.tpl==='cordoba';
+  if(window.__ohne3d){if(gm)return TopView(box,cap,o);box.innerHTML='';return null} // nur in den Tests gesetzt: spart dort das langsame Zeichnen ohne Grafikkarte
   const cv=document.createElement('canvas');box.appendChild(cv);
   let R=null;try{R=GLR(cv)}catch(e){R=null}
-  if(!R){box.innerHTML=`<p class="mu" style="padding:16px">${t('no3d')}</p>`;return null}
-  const c=calc(),worn=o.worn,now=o.mode==='now',sc=buildScene(c,worn),N=c.total;
+  if(!R){if(gm){box.innerHTML='';return TopView(box,cap,o)}box.innerHTML=`<p class="mu" style="padding:16px">${t('no3d')}</p>`;return null}
+  // Oberteil: immer am Model (eigene Szene), Schal: flach oder am Model
+  const c=calc(),worn=gm||o.worn,now=o.mode==='now',sc=gm?buildTopScene(c):buildScene(c,worn),N=c.total;
   const parts=sc.kinds.map(k=>({rows:k.rows,solid:R.add(k.geo,{m:k.m,c:k.c,alpha:1}),ghost:R.add(k.geo,{m:k.mR,c:k.cR,alpha:.18})}));
   const under=R.add(sc.under.geo,{vcol:sc.under.vcol,alpha:1});
   sc.meshes.forEach(m=>R.add(m.geo,m));
   const lb=(a,x)=>{let lo=0,hi=a.length;while(lo<hi){const m=(lo+hi)>>1;if(a[m]<x)lo=m+1;else hi=m}return lo};
   const live=!!o.live,Wm=sc.rowW(c.maxN);
-  const st={R,raf:0,dirty:1,rx:0,ry:0,tgt:[0,0,0],dist:1,asp:1,row:Math.min(S.row,N),follow:false,mode:live?'follow':'free',goal:null,fdist:worn?2.4:Math.max(1.2,Wm*1.9)},dir=worn?vnorm([0,.2,1]):vnorm([0,.92,.38]);
+  const st={R,raf:0,dirty:1,rx:0,ry:0,tgt:[0,0,0],dist:1,asp:1,row:Math.min(S.row,N),follow:false,mode:live?'follow':'free',goal:null,fdist:gm?8.5:worn?2.4:Math.max(1.2,Wm*1.9)},dir=worn?vnorm([0,.2,1]):vnorm([0,.92,.38]);
   const pv=worn?13.5:0,modelFor=(rx,ry)=>{const m=M4.mul(M4.rx(rx),M4.ry(ry));const q=M4.app(m,[0,pv,0]);m[12]=-q[0];m[13]=pv-q[1];m[14]=-q[2];return m},modelM=()=>modelFor(st.rx,st.ry);
   // Übersicht: in der Live-Ansicht liegt der Schal flach immer waagerecht (Reihen von links nach rechts)
-  const homeGoal=()=>{if(worn)return{tgt:[0,13.7,0],dist:Math.max(10,7.2/Math.min(1,st.asp)),ry:0,rx:0};
+  const homeGoal=()=>{if(worn)return{tgt:sc.home||[0,13.7,0],dist:Math.max(10,(sc.home?7.8:7.2)/Math.min(1,st.asp)),ry:0,rx:0};
     if(live)return{tgt:[0,0,0],dist:Math.max(sc.R0*3.2/st.asp,Wm*2.2)+.3,ry:0,rx:0};
     return{tgt:[0,0,0],ry:st.asp<1?Math.PI/2:0,rx:0,dist:sc.R0*(st.asp<1?2.7:3.1/Math.min(1.6,st.asp))}};
   const home=()=>{st.follow=false;const g=homeGoal();st.tgt=g.tgt;st.dist=g.dist;st.ry=g.ry;st.rx=g.rx;st.goal=null;st.dirty=1};
@@ -290,12 +383,12 @@ function View3D(box,cap,o){
   const ease=(g,snap)=>{if(snap){st.tgt=g.tgt;st.dist=g.dist;st.ry=g.ry;st.rx=g.rx;st.goal=null}else st.goal=g;st.dirty=1};
   function setRow(r){st.row=Math.min(Math.max(r,0),N);const nd=now?st.row:N;
     for(const p of parts){const k=lb(p.rows,nd);p.solid.count=k;p.ghost.count=now?p.rows.length-k:0}
-    under.n=Math.max(0,Math.min(nd,N)-1)*6;
+    under.n=sc.underN?sc.underN(nd):Math.max(0,Math.min(nd,N)-1)*6;
     const pc=Math.round(st.row/N*100);
-    if(cap)cap.textContent=(o.live?'':worn?t('model'):'')+(now?t('cap3now')(st.row,N,pc):t('cap3all')(c.stTot,N))+(o.live?t('liveHelp'):t('help3d'));
+    if(cap)cap.textContent=(o.live?'':gm?(DB.lang==='de'?`Córdoba Top, Größe ${S.size.toUpperCase()}. `:`Córdoba Top, size ${S.size.toUpperCase()}. `):worn?t('model'):'')+(now?t('cap3now')(st.row,N,pc):t('cap3all')(c.stTot,N))+(o.live?t('liveHelp'):t('help3d'));
     if(o.prog)o.prog.textContent=`${st.row} / ${N} · ${pc} %`;
     if(live&&st.mode==='follow')ease(followGoal(),!st.started);else if(st.follow)toRow();st.dirty=1}
-  st.go=n=>{if(n){st.follow=true;toRow();st.dist=worn?1.6:.7;st.dirty=1}else home()};
+  st.go=n=>{if(n){st.follow=true;toRow();st.dist=gm?3.2:worn?1.6:.7;st.dirty=1}else home()};
   const fit=()=>{const w=box.clientWidth,h=box.clientHeight,dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);st.asp=w/Math.max(1,h);if(!st.init){st.init=1;home()}if(live&&st.mode==='follow')ease(followGoal(),true);st.dirty=1};
   function toggle(){if(st.mode==='follow'){setMode('overview');ease(homeGoal(),false)}else{setMode('follow');ease(followGoal(),false)}}
   st.ro=new ResizeObserver(fit);st.ro.observe(box);fit();

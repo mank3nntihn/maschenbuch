@@ -5,7 +5,7 @@ function vCount(){
 function liveCard(){
   const lv=DB.liveView;
   return `<section class="card live" id="livecard"><div class="lh"><h2>${t('liveT')}</h2><span class="mu" id="lvp"></span></div>
-  <div class="seg"><button class="${lv==='flat'?'on':''}" onclick="DB.liveView='flat';save();render()">${t('flat')}</button><button class="${lv==='worn'?'on':''}" onclick="DB.liveView='worn';save();render()">${t('worn')}</button></div>
+  ${S.tpl==='cordoba'?'':`<div class="seg"><button class="${lv==='flat'?'on':''}" onclick="DB.liveView='flat';save();render()">${t('flat')}</button><button class="${lv==='worn'?'on':''}" onclick="DB.liveView='worn';save();render()">${t('worn')}</button></div>`}
   <div id="lgl" class="gl"></div>
   <button class="livebtn" id="lvbtn" onclick="LIVE.toggle()">${t('liveWhole')}</button>
   <p class="mu sm" id="lglt"></p></section>`;
