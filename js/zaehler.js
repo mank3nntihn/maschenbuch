@@ -1,6 +1,6 @@
 // ===== Zähler: Reihen zählen, großer Zähler, Reihen-Merker, Bildschirm anlassen =====
 function vCount(){
-  return `<div class="split ${DB.live?'on':''}"><div id="cnt">${countCard()}</div>${DB.live?liveCard():''}</div>`;
+  return `<div class="split ${DB.live?'on':''}"><div><div id="cnt">${countCard()}</div>${NOTE.html()}</div>${DB.live?liveCard():''}</div>`;
 }
 function liveCard(){
   const lv=DB.liveView;
@@ -128,12 +128,12 @@ const FOC={on:false,ctl:null,
     return `<div class="rn">${done?(de?'Fertig!':'Done!'):(de?'Reihe ':'Row ')+nxt}<small> / ${c.total} · ${pc} %</small></div>`},
   html(){const de=DB.lang==='de',dk=(THEMES[DB.theme]||{}).dark;
     return `<div class="fz"><div class="top"><div id="fzh">${this.head()}</div><div class="tbw"><div class="tb"><button onclick="FOC.dark()" aria-label="${de?'Hell/Dunkel':'Light/Dark'}">${dk?'☀️':'🌙'}</button><button onclick="FOC.close()" aria-label="${t('close')}">✕</button></div><div class="kal kalf" id="kalf">${KAL.html(1)}</div></div></div>
-      <div id="fzi">${this.info()}</div>
+      <div id="fzi"><div id="fzib">${this.info()}</div>${NOTE.html(1)}</div>
       <div id="fgl" class="gl"></div>
       <div class="bot" id="fzbot">${this.bot()}</div></div>`},
   bot(){return PZ.bar(S.row>=calc().total)+PZ.pad()},
-  start(){HIST.fade();this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
-  upd(){const i=$('fzi');if(!i)return render();i.innerHTML=this.info();$('fzh').innerHTML=this.head();HIST.fade();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
+  start(){HIST.fade();NOTE.fitAll();this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
+  upd(){const i=$('fzib');if(!i)return render();i.innerHTML=this.info();$('fzh').innerHTML=this.head();HIST.fade();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
   dark(){if(!THEMES[DB.theme].dark){DB.lightTheme=DB.theme;DB.theme='night'}else DB.theme=DB.lightTheme||'rose';save();render()}
 };
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&FOC.on&&innerWidth>=900){FOC.on=false;render()}});
@@ -149,3 +149,13 @@ function agoHtml(p){const a=agoTxt(p.last),de=DB.lang==='de';if(!a)return '';
   return `<p class="ago">⏱ ${de?'Letzte Reihe gezählt':'Last row counted'}: <b class="agot" data-t="${p.last}">${a}</b></p>`}
 setInterval(()=>document.querySelectorAll('.agot').forEach(e=>e.textContent=agoTxt(+e.dataset.t)),5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.querySelectorAll('.agot').forEach(e=>e.textContent=agoTxt(+e.dataset.t))});
+
+// ===== Notizzettel pro Projekt: eine Zeile, wächst mit dem Text. Liegt außerhalb der Bereiche, die bei +1 neu gezeichnet werden =====
+const NOTE={t:null,id:null,v:null,
+  html(fz){const de=DB.lang==='de';return `<div class="note${fz?' fzx k4':' card'}">${fz?`<p class="cap">${de?'Notiz':'Note'}</p>`:''}<textarea class="ntx" rows="1" placeholder="📝 ${de?'Notiz zum Projekt …':'Note for this project …'}" aria-label="${de?'Notiz':'Note'}" oninput="NOTE.inp(this)" onblur="NOTE.flush()">${esc(NOTE.id===S.id&&NOTE.v!=null?NOTE.v:S.note||'')}</textarea></div>`},
+  fit(e){e.style.height='auto';e.style.height=e.scrollHeight+'px'},
+  fitAll(){document.querySelectorAll('.ntx').forEach(e=>NOTE.fit(e))},
+  // Speichern mit kurzer Verzögerung (nicht bei jedem Buchstaben synchronisieren)
+  inp(e){this.fit(e);this.id=S.id;this.v=e.value;clearTimeout(this.t);this.t=setTimeout(()=>this.flush(),700)},
+  flush(){clearTimeout(this.t);if(this.id==null)return;const p=byId(this.id),v=this.v;this.id=null;if(!p||(p.note||'')===v)return;if(v)p.note=v;else delete p.note;save()}
+};

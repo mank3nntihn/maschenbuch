@@ -316,3 +316,12 @@ html[data-dark="1"] .fzx.k3{background:#231e31;border-color:#342c48}html[data-da
 .tv0{fill:var(--fld);stroke:none}.tv1{fill:none;stroke:var(--ink);stroke-opacity:.45;stroke-width:1.4;stroke-linejoin:round}
 .tvb{stroke-width:5;stroke-linecap:round}.tvc{fill:none;stroke:var(--ink);stroke-opacity:.7;stroke-width:1.4;stroke-linecap:round}
 .tvl{stroke:var(--ac);stroke-width:2;stroke-dasharray:4 3}
+
+/* Notizzettel: eine Zeile, wächst mit dem Text */
+.note.card{padding:6px 10px}
+.ntx{display:block;width:100%;min-height:0;resize:none;overflow:hidden;border:0;background:transparent;padding:6px 4px;font:inherit;font-size:16px;line-height:1.4;color:var(--ink);outline:none}
+.ntx::placeholder{color:var(--mu)}
+.fz .note .ntx{padding:2px 0 0;font-size:15px;max-height:30vh;overflow-y:auto}
+.fzx.k4{background:#ffe8dc;border-color:#f8d2bf}.fzx.k4 .cap{color:#c06a3e}
+html[data-dark="1"] .fzx.k4{background:#33231c;border-color:#4d3328}html[data-dark="1"] .fzx.k4 .cap{color:#f0b391}
+#fzib{display:contents}

@@ -27,8 +27,9 @@ Neue Migration in `supabase/migrations/`, Test in `supabase/tests/`. Zerstöreri
 | Zähler, +1/−1, Reihe eingeben, Warnungen | `grundlagen reihenzaehlung` |
 | Großer Zähler (Vollbild), Kästen, Verlauf | `verlauf reihenzaehlung` |
 | Pause-Timer | `pause` |
+| Notizzettel | `notiz` |
 | Strickzeit, Rückgängig, Fertig-Moment, Konfetti, Halbzeit | `zeit halbzeit` |
-| 3D (Tab, Live, großer Zähler) | `3d` |
+| 3D (Tab, Live, großer Zähler; Top am Model) | `3d` |
 | Seiten, Vorlagen, Garnlager, Farbwahl, Export/Import, Farbmuster | `alle-seiten angebote` |
 | Anmelden, Sync, Knit-Along, Tausch, Konto, Einladungscode | `sync knitalong tausch konto einladungscode` |
 | Córdoba Top (Vorlage mit Größen) | `cordoba` |

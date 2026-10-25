@@ -1,0 +1,23 @@
+module.exports={name:'Notizzettel im Zähler und im großen Zähler',async run(h,ok){
+  const p=await h.page('u-anna','anna@x.de');
+  await p.evaluate(()=>{pickP(0);delete S.note;save();tab='count';render()});
+  const hoehe=sel=>p.locator(sel).evaluate(e=>e.getBoundingClientRect().height);
+  const h0=await hoehe('#app .note .ntx');
+  ok(h0>0&&h0<45,`Leer: nur eine Zeile hoch (${Math.round(h0)} px)`);
+  await p.fill('#app .note .ntx','Nadel 4 statt 3,5 genommen\nÄrmel: 2 Runden mehr\nFarbe B ab Reihe 80');
+  const h1=await hoehe('#app .note .ntx');ok(h1>h0*2,`Wächst mit dem Text (${Math.round(h1)} px bei 3 Zeilen)`);
+  ok(await h.until(p,()=>S.note&&S.note.includes('Ärmel'),null,3000),'Wird gespeichert');
+  await p.evaluate(()=>FOC.open());
+  ok((await p.locator('.fz .note .ntx').inputValue()).includes('Farbe B'),'Im großen Zähler als eigener Kasten mit demselben Text');
+  ok(await hoehe('.fz .note .ntx')>40,'Auch dort so hoch wie der Text');
+  await p.locator('.fz .note .ntx').click();await p.keyboard.press('Control+End');const r0=await p.evaluate(()=>S.row);await p.keyboard.type(' – passt! 2+1');
+  ok(await p.evaluate(r0=>S.row===r0,r0),'Tippen in der Notiz (Leertaste, +, Ziffern) zählt keine Reihe');
+  await p.evaluate(()=>go(1));
+  ok(await p.locator('.fz .note .ntx').evaluate(e=>e===document.activeElement&&e.value.endsWith('passt! 2+1')),'+1 während des Tippens: Notiz bleibt samt Cursor erhalten');
+  await p.evaluate(()=>NOTE.flush());ok(await p.evaluate(()=>S.note.endsWith('passt! 2+1')),'Änderung im großen Zähler wird gespeichert');
+  await p.evaluate(()=>FOC.close());
+  await p.evaluate(()=>{const q=clone(DB.projects[0]);q.id=rid();delete q.note;q.name='Zweites';DB.projects.push(q);pickP(DB.projects.length-1);tab='count';render()});
+  ok(await p.locator('#app .note .ntx').inputValue()==='','Jedes Projekt hat seine eigene Notiz');
+  await p.evaluate(()=>{pickP(0);render()});await p.fill('#app .note .ntx','');await p.evaluate(()=>NOTE.flush());
+  ok(await p.evaluate(()=>!('note' in S)),'Leere Notiz wird entfernt');
+}};

@@ -22,7 +22,7 @@ function render(){
   if(tab==='count'&&DB.live)LIVE.start();
   $('nav').innerHTML=TABS.map((k,i)=>`<button ${k===tab?'aria-current="page"':''} onclick="tab='${k}';render();scrollTo(0,0)">${t('tabs')[i]}</button>`).join('');
   if(menuOpen)renderMenu();
-  SB.presence();
+  SB.presence();NOTE.fitAll();
   if(TOUR.on)requestAnimationFrame(()=>TOUR.place());
 }
 let POPP=null;
@@ -43,8 +43,9 @@ document.addEventListener('click',e=>{
 function helpGo(k){helpOpen=k;tab='help';popClose();render();scrollTo(0,0)}
 addEventListener('scroll',()=>{$('pop').hidden=true},{passive:true});
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&e.target.tagName==='TEXTAREA')return e.target.blur(); // Notiz: Escape beendet nur das Tippen
   if(e.key==='Escape'){if(FOC.on&&!($('pk')&&!$('pk').hidden))return FOC.close();menu(0);$('pop').hidden=true}
-  if(tab!=='count'||menuOpen||/INPUT|SELECT/.test(e.target.tagName))return;
+  if(tab!=='count'||menuOpen||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return; // in Textfeldern zählen Leertaste, +, − und Ziffern nicht
   if(/^[0-9]$/.test(e.key)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();jumpOpen(e.key);return}
   if(e.key==='ArrowRight'||e.key==='+'||e.key===' '){e.preventDefault();go(1)}
   if(e.key==='ArrowLeft'||e.key==='-'){go(-1)}

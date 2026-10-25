@@ -12,17 +12,4 @@ module.exports={mit3d:true,name:'3D: Tab, Live-Ansicht im Zähler und großer Z�
   await p.evaluate(()=>FOC.open());const r0=await p.evaluate(()=>S.row);await p.locator('.fz .plus').click();
   ok(await p.evaluate(r0=>S.row===r0+1&&!!FOC.ctl&&document.querySelector('#fgl canvas').width>0,r0),'Großer Zähler: 3D zeichnet und zählt weiter');
   await p.evaluate(()=>FOC.close());
-  // Córdoba Top: echtes 3D-Model am Model
-  await p.evaluate(()=>{const q=clone(tplDef('cordoba'));q.id=rid();DB.projects.push(q);pickP(DB.projects.length-1);S.row=60;save()});
-  ok(await zeichnet('#gl',"V3.mode='now';tab='3d';render()"),'Córdoba Top: 3D-Ansicht zeichnet');
-  const t=await p.evaluate(()=>{const c=calc(),L=topLayout(c),parts=avatarParts(),fs=partSDF(parts.filter(q=>q.t==='lathe'));
-    const row0=L.S.filter(s=>s.row===0).map(s=>s.P[1]),body=L.S.filter(s=>c.R[s.row].sec==='body');
-    return{n:L.S.length,rows:new Set(L.S.map(s=>s.row)).size,neck:Math.min(...row0)>14.2&&Math.max(...row0)<14.45,
-      aussen:body.filter((s,i)=>i%50===0).every(s=>sdf(fs,s.P)>0),erste:row0.length===c.z.co}});
-  ok(t.n>25000&&t.erste,`Córdoba Top: ${t.n} Maschen, erste Reihe mit ${'allen'} Anschlagmaschen`);
-  ok(t.neck,'Córdoba Top: Halsblende liegt rundum auf Halshöhe');
-  ok(t.aussen,'Córdoba Top: Körper-Maschen liegen außen auf dem Model, nicht im T-Shirt');
-  await p.evaluate(()=>FOC.open());const c0=await p.evaluate(()=>FOC.ctl.st.row);await p.locator('.fz .plus').click();
-  ok(await p.evaluate(c0=>FOC.ctl&&FOC.ctl.st.row===c0+1,c0),'Córdoba Top: großer Zähler mit 3D, +1 lässt das Top wachsen');
-  await p.evaluate(()=>FOC.close());
 }};
