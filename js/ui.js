@@ -47,6 +47,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(FOC.on&&!($('pk')&&!$('pk').hidden))return FOC.close();menu(0);$('pop').hidden=true}
   if(tab!=='count'||menuOpen||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return; // in Textfeldern zählen Leertaste, +, − und Ziffern nicht
   if(/^[0-9]$/.test(e.key)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();jumpOpen(e.key);return}
+  if((e.key==='m'||e.key==='M')&&!e.metaKey&&!e.ctrlKey&&!e.altKey){e.preventDefault();MS.listen();return} // Masche per Sprache
   if(e.key==='ArrowRight'||e.key==='+'||e.key===' '){e.preventDefault();go(1)}
   if(e.key==='ArrowLeft'||e.key==='-'){go(-1)}
 });

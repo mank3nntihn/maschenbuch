@@ -325,3 +325,12 @@ html[data-dark="1"] .fzx.k3{background:#231e31;border-color:#342c48}html[data-da
 .fzx.k4{background:#ffe8dc;border-color:#f8d2bf}.fzx.k4 .cap{color:#c06a3e}
 html[data-dark="1"] .fzx.k4{background:#33231c;border-color:#4d3328}html[data-dark="1"] .fzx.k4 .cap{color:#f0b391}
 #fzib{display:contents}
+
+/* Masche merken (Sprache oder −/+) */
+.msk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 0;padding:5px 6px 5px 14px;border-radius:14px;background:#fde8f1;background:color-mix(in srgb,var(--ac) 16%,var(--fld));border:1px solid color-mix(in srgb,var(--ac) 45%,var(--ln));font-size:15px;color:var(--mu)}
+.msk b{color:var(--ink);font-size:18px;font-variant-numeric:tabular-nums}.msk small{font-size:13px}
+.mbt{display:flex;gap:6px;flex:none}.mbt button{min-height:38px;min-width:42px;padding:0 10px;border-radius:12px;font-size:17px}
+.mbt .mic{font-size:18px}.msk.on{border-color:var(--ac)}.msk.on .mic{background:var(--ac);color:var(--on);animation:micp 1s ease-in-out infinite}
+@keyframes micp{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--ac) 35%,transparent)}}
+.msk+.rtm{margin-top:8px}.fz .msk{margin:0}
+@media(prefers-reduced-motion:reduce){.msk.on .mic{animation:none}}

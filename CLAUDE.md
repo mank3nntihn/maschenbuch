@@ -28,6 +28,7 @@ Neue Migration in `supabase/migrations/`, Test in `supabase/tests/`. Zerstöreri
 | Großer Zähler (Vollbild), Kästen, Verlauf | `verlauf reihenzaehlung` |
 | Pause-Timer | `pause` |
 | Notizzettel | `notiz` |
+| Masche merken (Sprache, −/+) | `masche` |
 | Strickzeit, Rückgängig, Fertig-Moment, Konfetti, Halbzeit | `zeit halbzeit` |
 | 3D (Tab, Live, großer Zähler; Top am Model) | `3d` |
 | Seiten, Vorlagen, Garnlager, Farbwahl, Export/Import, Farbmuster | `alle-seiten angebote` |
