@@ -20,7 +20,9 @@ function missingToShop(){
   save();toast(n?t('added'):t('nothing'));
 }
 
-function vSize(){
+// Maße-Tab: Grundeinstellungen der Vorlage, darunter die passenden Werkzeuge (siehe TOOLS)
+function vSize(){return vSizeBase()+(hasTool('raglan')?RAG.html():'')}
+function vSizeBase(){
   const sop=S.tpl==='sophie';
   const n=(k,l,min)=>`<div><label>${l}</label><input type="number" inputmode="decimal" min="${min}" value="${S[k]}" oninput="setN('${k}',this.value)"></div>`;
   const needle=`<label>${S.tech==='crochet'&&!sop?t('hookK'):t('needleK')}</label>
@@ -73,3 +75,32 @@ function vSizeCordoba(needle,colors){const de=DB.lang==='de',c=calc(),z=c.z;
 function setCSize(k){const i=CZ.indexOf(k);if(i<0)return;Object.assign(S,{size:k,l:CD.len[i]});save();render()}
 function gmWoolNote(c){const de=DB.lang==='de',z=c.z;
   return `<p class="mu sm">${de?'Garnvorschläge aus der Anleitung':'Yarn suggestions from the pattern'} (${z.size.toUpperCase()}): ${z.div} g Divina (Lang Yarns, 50 g = 140 m) · ${z.ani} g Anina (Filcolana, 50 g = 210 m) · ${z.org} g Organic Trio (Hjertegarn, 50 g = 230 m)</p>`}
+
+// ===== Raglan-Rechner (Raglan von oben): Anschlag aus Halsausschnitt und Maschenprobe, Verteilung auf Rücken, Vorderteil, Ärmel, Raglanlinien =====
+// Übliche RVO-Regel: Anschlag − 4 Raglanlinien, Rest: je 1/3 Vorder- und Rückteil, je 1/6 pro Ärmel. Mit Oberweite: Zunahmerunden bis zur Ärmelteilung.
+const RAG={
+  // Startwerte aus dem Projekt: Halsausschnitt = Anschlag / Maschenprobe (beim Córdoba Top 128 M ≈ 61 cm)
+  get(){if(!S.rg){const g=S.sts||20;S.rg={neck:Math.round(calc().cast/(g/10)),g20:+(200/g).toFixed(1),rl:1,typ:'pulli',chest:''}}return S.rg},
+  calc(r){const pc=20/Math.max(.1,+r.g20||10),tot=Math.max(8,Math.round((+r.neck||0)*pc)),rest=tot-4*r.rl,sl=Math.round(rest/6),body=rest-2*sl,back=Math.ceil(body/2),front=body-back;
+    const o={pc,tot,sl,back,front,fl:Math.floor(front/2),fr:front-Math.floor(front/2)};
+    if(+r.chest>0){const half=Math.round(+r.chest*pc/2);o.rounds=Math.max(0,Math.ceil((half-back)/2));o.half=half;if(S.rows)o.cm=Math.round(o.rounds*2/(S.rows/10))}
+    return o},
+  html(){const de=DB.lang==='de',r=this.get(),M=ab(de?'M':'st');
+    const inp=(k,l,min,step)=>`<div><label>${l}</label><input type="number" inputmode="decimal" min="${min}" step="${step}" value="${esc(r[k])}" oninput="RAG.set('${k}',this.value)"></div>`;
+    return `<section class="card rag"><h2>${de?'Raglan-Rechner':'Raglan calculator'}</h2>
+    <p class="mu sm">${de?'Für ein Oberteil von oben mit Raglan: berechnet den Anschlag und wie er sich auf Rücken, Vorderteil, Ärmel und Raglanlinien verteilt.':'For a top-down raglan: works out the cast-on and how it splits into back, front, sleeves and raglan lines.'}</p>
+    <div class="two">${inp('neck',de?'Halsausschnitt (cm)':'Neckline (cm)',10,1)}${inp('g20',de?'20 Maschen sind … cm':'20 stitches measure … cm',2,.1)}</div>
+    <div class="two"><div><label>${de?'Maschen je Raglanlinie':'Stitches per raglan line'}</label><select onchange="RAG.set('rl',this.value)">${[1,2,3,4].map(v=>`<option ${+r.rl===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      ${inp('chest',de?'Oberweite des Teils (cm, optional)':'Finished chest (cm, optional)',0,1)}</div>
+    <div class="seg" style="margin-top:12px"><button class="${r.typ==='pulli'?'on':''}" onclick="RAG.set('typ','pulli');render()">${de?'Pullover / Top':'Pullover / top'}</button><button class="${r.typ==='jacke'?'on':''}" onclick="RAG.set('typ','jacke');render()">${de?'Jacke (vorne offen)':'Cardigan (open front)'}</button></div>
+    <div id="rgout">${this.out()}</div></section>`},
+  out(){const de=DB.lang==='de',r=this.get(),o=this.calc(r),M=ab(de?'M':'st'),R=+r.rl,jk=r.typ==='jacke';
+    const parts=jk?[[de?'Vorderteil links':'Left front',o.fl],['Raglan',R],[de?'Ärmel':'Sleeve',o.sl],['Raglan',R],[de?'Rücken':'Back',o.back],['Raglan',R],[de?'Ärmel':'Sleeve',o.sl],['Raglan',R],[de?'Vorderteil rechts':'Right front',o.fr]]
+      :[[de?'Rücken':'Back',o.back],['Raglan',R],[de?'Ärmel':'Sleeve',o.sl],['Raglan',R],[de?'Vorderteil':'Front',o.front],['Raglan',R],[de?'Ärmel':'Sleeve',o.sl],['Raglan',R]];
+    let h=`<div class="rgres"><div class="rgt"><b>${o.tot}</b> ${M} ${de?'anschlagen':'cast on'}</div><ol class="rgl">${parts.map(([n,v])=>`<li class="${n==='Raglan'?'rr':''}"><span>${n}</span><b>${v}</b></li>`).join('')}</ol>
+      <p class="mu sm">${de?(jk?'In Reihen hin und her, Beginn am linken Vorderteil.':'In Runden, Beginn am Rücken (hintere Mitte oder linke Raglanlinie).'):(jk?'Worked flat, starting at the left front.':'Worked in the round, starting at the back.')} ${de?`Zunahmen: in jeder Zunahmerunde vor und nach jeder Raglanlinie 1 ${M} zunehmen (+8 ${M}).`:`Increase 1 ${M} before and after every raglan line in each increase round (+8 ${M}).`}</p>`;
+    if(o.rounds!=null)h+=`<p class="rgz">${de?`Für ${esc(r.chest)} cm Oberweite braucht ${jk?'der Rücken':'jedes Teil'} ca. ${o.half} ${M}: <b>${o.rounds} Zunahmerunden</b> (meist jede 2. Runde)${o.cm!=null?`, Passe ca. <b>${o.cm} cm</b> tief`:''}. Danach Ärmel stilllegen.`:`For a ${esc(r.chest)} cm chest each half needs about ${o.half} ${M}: <b>${o.rounds} increase rounds</b> (usually every other round)${o.cm!=null?`, yoke about <b>${o.cm} cm</b> deep`:''}. Then put the sleeves on hold.`}</p>`;
+    if(S.tpl==='cordoba'){const z=cordobaZ();h+=`<p class="mu sm">${de?`Zum Vergleich die Córdoba-Anleitung (${z.size.toUpperCase()}): ${z.co} ${M}, vorne geteilt ${z.a+1} + ${z.d}, Ärmel ${z.b}, Rücken ${z.c}, Raglan je 1. Die Anleitung bleibt maßgeblich – der Rechner hilft bei eigenen Abwandlungen.`:`For comparison, the Córdoba pattern (${z.size.toUpperCase()}): ${z.co} ${M}, split front ${z.a+1} + ${z.d}, sleeves ${z.b}, back ${z.c}, raglan 1 each. Follow the pattern – the calculator helps with your own variations.`}</p>`}
+    return h+'</div>'},
+  set(k,v){const r=this.get();r[k]=k==='typ'?v:k==='rl'?+v:v;save();const e=$('rgout');if(e)e.innerHTML=this.out()}
+};

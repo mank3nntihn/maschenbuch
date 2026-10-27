@@ -20,6 +20,10 @@ const CD={bust:[78,82,86,90,94,98,102],m:[550,600,650,700,750,800,850],co:[118,1
   div:[200,250,250,250,300,300,300],ani:[150,150,200,200,200,200,250],org:[150,150,150,200,200,200,200]};
 // pat: Merkmal, das auch alte Versionen der Seite beim Speichern behalten (die kennen tpl 'cordoba' noch nicht)
 const DEFC={tpl:'cordoba',pat:'cordoba',name:'Córdoba Top',size:'s',tech:'knit',needle:3.5,mpb:140,l:35,sts:21,rows:32,row:0,stripes:[{n:'Rosa',c:'#f4a6c6',r:999}]};
+// Werkzeuge je Vorlage: was unter „Maße“ zusätzlich erscheint. Neue Vorlage → hier eintragen, was zu ihrer Bauweise passt.
+// raglan = Raglan-Rechner (nur für Oberteile, die mit Raglan gestrickt werden)
+const TOOLS={sophie:[],weekend:[],stripe:[],cordoba:['raglan']};
+const hasTool=k=>(TOOLS[S&&S.tpl]||[]).includes(k);
 const DEFST={tpl:'stripe',name:'Streifenschal',tech:'knit',w:20,l:150,sts:20,rows:36,mpb:125,needle:4.5,row:0,stripes:[{n:'Rosa',c:'#f4a6c6',r:24},{n:'Babyblau',c:'#a9d6f5',r:12},{n:'Perlweiß',c:'#fff4f8',r:24}]};
 const DEFDB={lang:'de',theme:'rose',abbr:true,live:false,liveView:'flat',cur:0,projects:[DEFS],stash:[{n:'Rosa',c:'#f4a6c6',b:1,m:115,nd:3.5}],shop:[]};
 const clone=o=>JSON.parse(JSON.stringify(o));

@@ -34,10 +34,16 @@ Neue Migration in `supabase/migrations/`, Test in `supabase/tests/`. Zerstöreri
 | Seiten, Vorlagen, Garnlager, Farbwahl, Export/Import, Farbmuster | `alle-seiten angebote` |
 | Anmelden, Sync, Knit-Along, Tausch, Konto, Einladungscode | `sync knitalong tausch konto einladungscode` |
 | Córdoba Top (Vorlage mit Größen) | `cordoba` |
+| Raglan-Rechner, Werkzeuge je Vorlage | `raglan` |
 | Tutorial (Tour) | `tutorial` |
 | Offline / Service Worker | `offline` |
 
 3D wird in den Tests nur in Gruppen mit `mit3d:true` gezeichnet (sonst zu langsam ohne Grafikkarte).
+
+## Neue Vorlagen
+
+In `js/daten.js` unter `TOOLS` eintragen, welche Werkzeuge zur Bauweise passen (z. B. `raglan` = Raglan-Rechner unter „Maße“,
+nur für Oberteile mit Raglan). Schals usw. bekommen eine leere Liste.
 
 ## Commits
 
