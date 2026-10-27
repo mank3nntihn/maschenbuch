@@ -27,7 +27,7 @@ function countCard(){
     ${agoHtml(S)}${TIME.html(S,c)}${done?`<button class="livebtn" onclick="FIN.show(S.id)">🎉 ${DB.lang==='de'?'Fertig-Übersicht':'Finish summary'}</button>`:''}
     ${alertHtml(c)}
     ${ins}
-    ${MS.bar(done)}${PZ.bar(done)}${PZ.pad()}
+    ${PZ.bar(done)}${PZ.pad()}
     <button class="fbtn" onclick="FOC.open()">⛶ ${DB.lang==='de'?'Großer Zähler (Vollbild)':'Big counter (full screen)'}</button>
     <button class="livebtn" aria-expanded="${DB.live}" onclick="toggleLive()"><span>${DB.live?t('liveHide'):t('liveShow')}</span><span class="ar">▾</span></button>
     <button class="ghost" onclick="resetRow()">${t('reset')}</button>
@@ -37,7 +37,7 @@ function countCard(){
 
 // +1 / −1: merkt sich die Zeit für die Strickzeit (fertig.js) und feiert die letzte Reihe
 function go(d){if(d>0&&S.pz)return PZ.hint();const tt=calc().total,o=S.row,prev=S.last,pt=S.pt||0,now=Date.now();S.row=Math.min(Math.max(S.row+d,0),tt);
-  if(S.row!==o){S.last=now;delete S.pt;delete S.mst;if(S.row>o){TIME.add(S,prev&&prev+pt,now);HIST.add(S,now,prev,pt)}else HIST.trim(S)}save();updCount();if(d>0)HALF.check(o,tt);FIN.check(o,tt)}
+  if(S.row!==o){S.last=now;delete S.pt;if(S.row>o){TIME.add(S,prev&&prev+pt,now);HIST.add(S,now,prev,pt)}else HIST.trim(S)}save();updCount();if(d>0)HALF.check(o,tt);FIN.check(o,tt)}
 
 // ===== Pause-Timer: Zeit der aktuellen Reihe, anhalten für kurze Pausen =====
 // S.pz = seit wann pausiert, S.pt = Pausenzeit seit der letzten Reihe (zählt nicht zur Strickzeit). Während der Pause ist +1 gesperrt.
@@ -75,7 +75,7 @@ const HIST={
 // Nur Zähler-Karte und Live-3D aktualisieren, ohne die 3D-Ansicht neu aufzubauen
 function updCount(){KAL.push();if(FOC.on)return FOC.upd();if(tab!=='count'||!$('cnt'))return render();$('pop').hidden=true;$('cnt').innerHTML=countCard();if(LIVE.ctl)LIVE.ctl.setRow(S.row)}
 function toggleLive(){DB.live=!DB.live;save();render();if(DB.live&&innerWidth<900)setTimeout(()=>{const e=$('livecard');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},60)}
-function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);if(S.row!==o)delete S.mst;HIST.trim(S);save();render();FIN.check(o,tt)}
+function setRow(r){const o=S.row,tt=calc().total;S.row=Math.min(Math.max(r,0),tt);HIST.trim(S);save();render();FIN.check(o,tt)}
 
 async function resetRow(){const de=DB.lang==='de';if(!await ask(t('resetQ')))return;
   const id=S.id,o={row:S.row,last:S.last,fin:S.fin,tm:S.tm,tr:S.tr,start:S.start,hist:S.hist,pz:S.pz,pt:S.pt,half:S.half};
@@ -131,7 +131,7 @@ const FOC={on:false,ctl:null,
       <div id="fzi"><div id="fzib">${this.info()}</div>${NOTE.html(1)}</div>
       <div id="fgl" class="gl"></div>
       <div class="bot" id="fzbot">${this.bot()}</div></div>`},
-  bot(){const d=S.row>=calc().total;return MS.bar(d)+PZ.bar(d,1)+PZ.pad()},
+  bot(){return PZ.bar(S.row>=calc().total,1)+PZ.pad()},
   start(){HIST.fade();NOTE.fitAll();this.ctl=View3D($('fgl'),null,{worn:false,mode:'now',live:true})},
   upd(){const i=$('fzib');if(!i)return render();i.innerHTML=this.info();$('fzh').innerHTML=this.head();HIST.fade();const b=$('fzbot');if(b)b.innerHTML=this.bot();if(this.ctl)this.ctl.setRow(S.row)},
   dark(){if(!THEMES[DB.theme].dark){DB.lightTheme=DB.theme;DB.theme='night'}else DB.theme=DB.lightTheme||'rose';save();render()}
@@ -158,38 +158,4 @@ const NOTE={t:null,id:null,v:null,
   // Speichern mit kurzer Verzögerung (nicht bei jedem Buchstaben synchronisieren)
   inp(e){this.fit(e);this.id=S.id;this.v=e.value;clearTimeout(this.t);this.t=setTimeout(()=>this.flush(),700)},
   flush(){clearTimeout(this.t);if(this.id==null)return;const p=byId(this.id),v=this.v;this.id=null;if(!p||(p.note||'')===v)return;if(v)p.note=v;else delete p.note;save()}
-};
-
-// ===== Masche merken: Denkhilfe für lange Reihen. Per Sprache (🎤 oder Taste M: Zahl sagen) oder mit −/+ =====
-// S.mst = Masche in der aktuellen Reihe; wird beim Wechsel der Reihe gelöscht. Spracherkennung des Browsers (Safari/Chrome, braucht Internet).
-const MS={on:false,rec:null,
-  SR:()=>window.SpeechRecognition||window.webkitSpeechRecognition,
-  bar(done){if(done)return '';const de=DB.lang==='de',c=calc(),n=(c.R[S.row]||{}).n,m=S.mst,sr=!!this.SR();
-    const txt=this.on?(de?'🎤 Ich höre zu … sag eine Zahl':'🎤 Listening … say a number'):m?`🧶 ${de?'Masche':'Stitch'} <b>${m}</b>${n?` <small>${de?'von':'of'} ${n}</small>`:''}`:`🧶 ${de?'Masche merken':'Remember stitch'}`;
-    return `<div class="msk${this.on?' on':''}"><span class="mst" aria-live="polite">${txt}</span><span class="mbt">
-      <button onclick="MS.step(-1)" aria-label="${de?'Masche zurück':'Stitch back'}" ${m?'':'disabled'}>−</button><button onclick="MS.step(1)" aria-label="${de?'Masche weiter':'Next stitch'}">+</button>
-      <button class="mic" onclick="MS.listen()" ${sr?'':'disabled'} title="${sr?(de?'Zahl sagen (Taste M)':'Say a number (key M)'):(de?'Spracherkennung gibt es in diesem Browser nicht – Safari oder Chrome nutzen':'Speech recognition is not available in this browser')}" aria-label="${de?'Masche per Sprache':'Stitch by voice'}">🎤</button></span></div>`},
-  set(m){if(m==null||isNaN(m))return;m=Math.max(0,Math.round(m));if(m)S.mst=m;else delete S.mst;save();this.refresh()},
-  step(d){this.set((S.mst||0)+d)},
-  refresh(){if(FOC.on){const b=$('fzbot');if(b)b.innerHTML=FOC.bot()}else if(tab==='count'&&$('cnt'))$('cnt').innerHTML=countCard()},
-  listen(){const SR=this.SR(),de=DB.lang==='de';if(!SR)return toast(de?'Spracherkennung gibt es in diesem Browser nicht – bitte Safari oder Chrome nutzen.':'Speech recognition is not available in this browser.');
-    if(this.on){try{this.rec.stop()}catch(e){}return}
-    const r=new SR();this.rec=r;r.lang=de?'de-DE':'en-US';r.interimResults=false;r.continuous=false;r.maxAlternatives=5;
-    let got=false;
-    r.onresult=e=>{const alts=[...e.results[0]].map(a=>a.transcript);for(const a of alts){const m=MS.num(a);if(m!=null){got=true;MS.set(m);toast((de?'Masche ':'Stitch ')+m);return}}
-      got=true;toast(de?`Keine Zahl verstanden („${alts[0]}“)`:`No number recognised (“${alts[0]}”)`)};
-    r.onerror=e=>{got=true;toast(e.error==='not-allowed'||e.error==='service-not-allowed'?(de?'Mikrofon ist nicht erlaubt – in den Einstellungen des Browsers für diese Seite erlauben.':'Microphone not allowed – allow it for this site in the browser settings.'):e.error==='network'?(de?'Spracherkennung braucht Internet.':'Speech recognition needs internet.'):(de?'Nichts verstanden – bitte noch einmal.':'Nothing recognised – please try again.'))};
-    r.onend=()=>{MS.on=false;MS.rec=null;MS.refresh();if(!got)toast(de?'Nichts verstanden – bitte noch einmal.':'Nothing recognised – please try again.')};
-    try{r.start();this.on=true;this.refresh()}catch(e){this.on=false;toast(de?'Mikrofon konnte nicht gestartet werden.':'Could not start the microphone.')}},
-  // Zahl aus dem Gesagten: Ziffern („87“, „Masche 87“) oder ausgeschrieben („siebenundachtzig“, „zweihundertdrei“, „eighty seven“).
-  // Wörter werden zerlegt (längste zuerst) und addiert; „hundert“ vervielfacht das Davorstehende: zwei|hundert|drei|und|vierzig = 243
-  num(t){t=String(t).toLowerCase().replace(/ß/g,'ss');const d=t.match(/\d+/);if(d)return +d[0];
-    const V={null:0,ein:1,eins:1,eine:1,zwei:2,zwo:2,drei:3,vier:4,fünf:5,sechs:6,sieben:7,acht:8,neun:9,zehn:10,elf:11,zwölf:12,sechzehn:16,siebzehn:17,
-      zwanzig:20,dreissig:30,vierzig:40,fünfzig:50,sechzig:60,siebzig:70,achtzig:80,neunzig:90,
-      zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,
-      twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90},K=[...Object.keys(V),'hundert','hundred','und','and'].sort((a,b)=>b.length-a.length);
-    let s=t.replace(/[^a-zäöü]/g,''),tot=0,cur=0,ok=false;
-    while(s){const k=K.find(k=>s.startsWith(k));if(!k){s=s.slice(1);continue}s=s.slice(k.length);
-      if(k==='und'||k==='and')continue;ok=true;if(k==='hundert'||k==='hundred'){tot+=(cur||1)*100;cur=0}else cur+=V[k]}
-    return ok?tot+cur:null}
 };
