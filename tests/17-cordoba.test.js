@@ -25,6 +25,12 @@ module.exports={name:'Córdoba Top: Vorlage mit 7 Größen',async run(h,ok){
   ok(/90 cm Brustumfang/.test(await p.locator('main').innerText())&&!/undefined/.test(await p.locator('main').innerText()),'Maße: Größe M für 90 cm Brustumfang');
   await p.evaluate(()=>{tab='steps';render()});const st=await p.locator('main').innerText();
   ok(['Halsblende','Passe','Ärmel stilllegen','Ausschnitt','Körper','Rechter Ärmel','Linker Ärmel','Ausschnittkante','Kordel','Alma Patterns'].every(x=>st.includes(x)),'Anleitung: alle Abschnitte und Hinweis auf Alma Patterns');
+  // Ausführliche Erklärungen: Abkürzungen und Halsblende
+  await p.click('.glc summary');
+  ok(await p.locator('.glc dt').count()>=10&&/direkt vor einen Markierer/.test(await p.locator('.glc').innerText()),'Anleitung: Abkürzungen mit Erklärung (z. B. M1R: „direkt vor einen Markierer“)');
+  ok(await p.locator('.csvg svg').count()===1&&/doppelt gelegter Streifen/.test(st)&&/Knötchen/.test(st),'Halsblende: Einleitung, Skizze und erklärte Bruchkante');
+  await p.evaluate(()=>{S.row=9;save();tab='count';render()});
+  ok(await p.locator('#cnt .ins ol.stp li').count()===3,'Zähler Reihe 10: Zusammenstricken in 3 Schritten erklärt');
   await p.evaluate(()=>{tab='wool';render()});ok(/700 m/.test(await p.locator('main').innerText())&&/Divina/.test(await p.locator('main').innerText()),'Wolle: 700 m für M, Garnvorschläge');
   await p.evaluate(()=>{V3.mode='now';tab='3d';render()});ok(await p.locator('#gl .topv svg').count()===1&&await p.locator('#app .seg button',{hasText:'Am Model'}).count()===0,'3D-Tab ohne WebGL: Schnitt-Vorschau als Ersatz');
   // Großer Zähler: Kästen und Vorschau wachsen mit

@@ -154,8 +154,8 @@ function gmText(c,r){const de=DB.lang==='de',z=c.z,M=ab(de?'M':'st'),MM=ab(de?'M
   const sl=de?`1 ${M} ${ab('re abh.')}`:ab('sl1kw'),K=ab(de?'re':'k'),P_=ab(de?'li':'p'),bo=de?`Alle ${M} ${ab('abk.')} – am schönsten mit der Methode gegen Einrollen (siehe Videos).`:`${ab('BO')} all ${M}, ideally with the no-roll bind-off (see videos).`;
   const T=de?{
    np:`${sl}, alle übrigen ${M} ${P_}.`,nk:`${sl}, ${K} bis zur letzten ${M}, 1 ${P_}.`,
-   nf:`<strong>Bruchkante:</strong> ${sl}, ${K} bis zur letzten ${M}, 1 ${P_}. Diese Rückreihe rechts stricken – vorne entsteht eine Linie aus linken Maschen, hier wird die Blende später umgeklappt.`,
-   nj:`Blende nach innen umklappen und jede ${M} zusammen mit der passenden Masche der Anschlagkante ${K} stricken. So entsteht der Tunnel für die Kordel.`,
+   nf:`<strong>Bruchkante:</strong> ${sl}, ${K} bis zur letzten ${M}, 1 ${P_}. <strong>Achtung:</strong> Das ist eine Rückreihe, wird aber <strong>rechts</strong> statt links gestrickt. Dadurch entsteht auf der Vorderseite eine Linie aus kleinen Knötchen – genau an dieser Linie wird die Blende später nach innen geknickt.`,
+   nj:`<strong>Blende zusammenstricken:</strong> Die Vorderseite zeigt zu dir. Klappe den Streifen an der Knötchenlinie aus Reihe 5 nach hinten, sodass die Anschlagkante hinter der linken Nadel liegt.<ol class="stp"><li>Mit der rechten Nadel in die nächste ${M} auf der linken Nadel stechen.</li><li>Zusätzlich von unten in die Schlinge der Anschlagkante stechen, die genau dahinter liegt.</li><li>Beide zusammen ${K} abstricken (wie 2 ${M} zusammen).</li></ol>So weiter bis zum Ende der Reihe. Danach ist die Blende ein geschlossener Tunnel für die Kordel. <em>Tipp:</em> Leichter geht es, wenn du die Anschlagschlingen vorher mit einer dünnen zweiten Rundnadel auffasst – dann strickst du immer 1 ${M} von der vorderen und 1 von der hinteren Nadel zusammen.`,
    ys:`${sl}, ${z.a} ${P_}, ${MM}, 1 ${P_}, ${MM}, ${z.b} ${P_}, ${MM}, 1 ${P_}, ${MM}, ${z.c} ${P_}, ${MM}, 1 ${P_}, ${MM}, ${z.b} ${P_}, ${MM}, 1 ${P_}, ${MM}, ${z.d} ${P_}.<br><small>= Vorderteil · Raglan · Ärmel · Raglan · Rücken · Raglan · Ärmel · Raglan · Vorderteil (8 ${MM})</small>`,
    yi:`${sl}, 4× [${K} bis zum ${MM}, ${ab('M1R')}, ${MM} abheben, 1 ${K}, ${MM} abheben, ${ab('M1L')}], ${K} bis zur letzten ${M}, 1 ${P_}. <strong>(+8 ${M})</strong>`,
    yp:`${sl}, alle übrigen ${M} ${P_}.`,
@@ -170,12 +170,12 @@ function gmText(c,r){const de=DB.lang==='de',z=c.z,M=ab(de?'M':'st'),MM=ab(de?'M
    lk:`Alle ${M} ${K}.`,lb:bo,
    o1:`Entlang der Öffnung ${M} auffassen: an den Seiten 1 ${M} aus jeder Randmasche, unten 1 ${M} zwischen jeder Anschlagmasche – zusammen ca. <strong>${z.op} ${M}</strong>.`,
    op:`Alle ${M} ${P_}.`,ok:`Alle ${M} ${K}.`,ob:bo,
-   c1:`2 ${M} anschlagen und immer wieder [1 ${K}, 1 ${M} mit dem Faden vor der Arbeit wie zum Linksstricken abheben, wenden], bis die ${ab('I-Cord')} ca. <strong>${z.cord} cm</strong> lang ist. Alternativ eine Luftmaschenkette häkeln.`,
+   c1:`2 ${M} anschlagen und immer wieder [1 ${K}, 1 ${M} mit dem Faden vor der Arbeit wie zum Linksstricken abheben, wenden], bis die ${abx('I-Cord','I-Cord-Kordel')} ca. <strong>${z.cord} cm</strong> lang ist. Alternativ eine Luftmaschenkette häkeln.`,
    c2:`Kordel mit einer Sicherheitsnadel durch den Tunnel der Halsblende ziehen und alle Fäden vernähen. Fertig! 🎉`
   }:{
    np:`${sl}, ${P_} to the end.`,nk:`${sl}, ${K} to the last ${M}, ${ab('p1')}.`,
-   nf:`<strong>Fold line:</strong> ${sl}, ${K} to the last ${M}, ${ab('p1')}. This wrong-side row is knitted so a purl line shows on the right side – the casing folds here later.`,
-   nj:`Fold the casing to the inside and knit each ${M} together with the matching stitch of the cast-on edge. This forms the tunnel for the cord.`,
+   nf:`<strong>Fold line:</strong> ${sl}, ${K} to the last ${M}, ${ab('p1')}. <strong>Note:</strong> this is a wrong-side row, but it is <strong>knitted</strong> instead of purled. That makes a line of little bumps on the right side – the casing folds inwards exactly along this line later.`,
+   nj:`<strong>Join the casing:</strong> The right side faces you. Fold the strip backwards along the bumpy line from row 5 so the cast-on edge sits behind the left needle.<ol class="stp"><li>Insert the right needle into the next ${M} on the left needle.</li><li>Also insert it from below into the cast-on loop directly behind it.</li><li>Knit both together (like k2tog).</li></ol>Continue to the end of the row. The casing is now a closed tunnel for the cord. <em>Tip:</em> it is easier if you first pick up the cast-on loops with a thin second circular needle – then knit 1 ${M} from the front and 1 from the back needle together each time.`,
    ys:`${sl}, ${P_} ${z.a}, ${ab('pm')}, ${ab('p1')}, ${ab('pm')}, ${P_} ${z.b}, ${ab('pm')}, ${ab('p1')}, ${ab('pm')}, ${P_} ${z.c}, ${ab('pm')}, ${ab('p1')}, ${ab('pm')}, ${P_} ${z.b}, ${ab('pm')}, ${ab('p1')}, ${ab('pm')}, ${P_} ${z.d}.<br><small>= front · raglan · sleeve · raglan · back · raglan · sleeve · raglan · front (8 markers)</small>`,
    yi:`${sl}, 4× [${K} to ${MM}, ${ab('m1r')}, slip ${MM}, ${ab('k1')}, slip ${MM}, ${ab('m1l')}], ${K} to the last ${M}, ${ab('p1')}. <strong>(+8 ${M})</strong>`,
    yp:`${sl}, ${P_} to the end.`,
@@ -190,7 +190,7 @@ function gmText(c,r){const de=DB.lang==='de',z=c.z,M=ab(de?'M':'st'),MM=ab(de?'M
    lk:`${K} all ${M}.`,lb:bo,
    o1:`Pick up ${M} along the opening: 1 ${M} in each edge stitch on the sides and 1 ${M} between each cast-on stitch at the bottom – about <strong>${z.op} ${M}</strong>.`,
    op:`${P_} all ${M}.`,ok:`${K} all ${M}.`,ob:bo,
-   c1:`Cast on 2 ${M} and repeat [${ab('k1')}, slip 1 purlwise with yarn in front, turn] until the ${ab('i-cord')} measures about <strong>${z.cord} cm</strong>. Or crochet a chain instead.`,
+   c1:`Cast on 2 ${M} and repeat [${ab('k1')}, slip 1 purlwise with yarn in front, turn] until the ${abx('i-cord','i-cord-cord')} measures about <strong>${z.cord} cm</strong>. Or crochet a chain instead.`,
    c2:`Thread the cord through the casing with a safety pin and weave in all ends. Done! 🎉`};
   return T[r.k]}
 function vStepsCordoba(c){const de=DB.lang==='de',z=c.z,R=c.R,M=ab(de?'M':'st'),sec={};
@@ -201,8 +201,10 @@ function vStepsCordoba(c){const de=DB.lang==='de',z=c.z,R=c.R,M=ab(de?'M':'st'),
   const rw=de?'Reihe':'Row',rws=de?'Reihen':'Rows',rd=de?'Runde':'Round',rds=de?'Runden':'Rounds',SZU=z.size.toUpperCase();
   const L=[
    {d:S.row>0,a:0,b:0,t:`<b>${de?'Anschlag':'Cast on'}</b><br>`+(de?`<b>${z.co} ${M}</b> mit 3,5 mm Rundstricknadel (80–100 cm) im Kreuzanschlag anschlagen. Größe ${SZU}.`:`Cast on <b>${z.co} ${M}</b> with a 3.5 mm circular needle (80–100 cm), long-tail cast on. Size ${SZU}.`)},
-   it('neck',(de?'In Hin- und Rückreihen. Die erste Masche jeder Reihe wird wie zum Rechtsstricken abgehoben, das gibt einen sauberen Rand.':'Worked back and forth. Slip the first stitch of every row knitwise for a neat edge.')
-     +`<ul class="sub">${box(`${rws} 1, 3 (${side({ws:true})})`,tx('np'))}${box(`${rws} 2, 4 (${side({ws:false})})`,tx('nk'))}${box(`${rw} 5 (${side({ws:true})})`,tx('nf'))}${box(`${rws} 6–9`,de?'wie Reihe 1–4, beginnend mit einer Hinreihe':'as rows 1–4, starting with a right-side row')}${box(`${rw} 10 (${side({ws:false})})`,tx('nj'))}</ul>`),
+   it('neck',(de?`<p class="gx">Die Halsblende ist ein <strong>doppelt gelegter Streifen</strong> am Halsausschnitt – ein kleiner Tunnel, durch den am Ende die Kordel gezogen wird. Dafür strickst du einen schmalen Streifen, knickst ihn in der Mitte (an der <strong>Bruchkante</strong>) nach innen und strickst ihn unten mit dem Anschlag zusammen. Gestrickt wird in Hin- und Rückreihen; die erste Masche jeder Reihe wird nur abgehoben (${ab('re abh.')}), das gibt einen sauberen Rand.</p>`
+       :`<p class="gx">The neckline casing is a <strong>folded double strip</strong> at the neckline – a little tunnel for the cord. You knit a narrow strip, fold it inwards along the middle (the <strong>fold line</strong>) and knit it together with the cast-on edge. Worked back and forth; the first stitch of every row is just slipped (${ab('sl1kw')}) for a neat edge.</p>`)
+     +casingSvg(de)
+     +`<ul class="sub">${box(`${rws} 1 ${de?'und':'and'} 3 (${side({ws:true})})`,tx('np')+(de?' <span class="mu">Das wird die Innenseite der Blende.</span>':' <span class="mu">This becomes the inside of the casing.</span>'))}${box(`${rws} 2 ${de?'und':'and'} 4 (${side({ws:false})})`,tx('nk'))}${box(`${rw} 5 (${side({ws:true})}) – ${de?'Bruchkante':'fold line'}`,tx('nf'))}${box(`${rws} 6–9`,de?`Wie Reihe 1–4, nur jetzt mit einer Hinreihe beginnend: Reihe 6 und 8 wie Reihe 2, Reihe 7 und 9 wie Reihe 1. Das wird die sichtbare Außenseite der Blende.`:`As rows 1–4, but starting with a right-side row: rows 6 and 8 like row 2, rows 7 and 9 like row 1. This becomes the visible outside of the casing.`)}${box(`${rw} 10 (${side({ws:false})}) – ${de?'zusammenstricken':'join'}`,tx('nj'))}</ul>`),
    it('yoke',`<ul class="sub">${box(de?'Markierer-Reihe':'Marker row',tx('ys'))}${box(de?`Dann ${z.y}× diese 2 Reihen`:`Then work these 2 rows ${z.y} times`,`${side({ws:false})}: ${tx('yi')}<br>${side({ws:true})}: ${tx('yp')}`)}</ul>`
      +(de?`Danach: ${z.f} · 1 · ${z.sl} · 1 · ${z.bk} · 1 · ${z.sl} · 1 · ${z.f} ${M} = ${z.co+8*z.y} ${M}.`:`Then: ${z.f} · 1 · ${z.sl} · 1 · ${z.bk} · 1 · ${z.sl} · 1 · ${z.f} ${M} = ${z.co+8*z.y} ${M}.`)),
    it('split',`<ul class="sub">${box(`${rw} 1 (${side({ws:false})})`,tx('sd'))}${box(`${rw} 2 (${side({ws:true})})`,tx('sp'))}</ul>`),
@@ -216,7 +218,7 @@ function vStepsCordoba(c){const de=DB.lang==='de',z=c.z,R=c.R,M=ab(de?'M':'st'),
    it('cord',`<ul class="sub">${box('I-Cord',tx('c1'))}${box(de?'Fertigstellen':'Finishing',tx('c2'))}</ul>`)
   ];
   const V=[[de?'Kreuzanschlag':'Long tail cast on','T5ScPtAPmrI'],[de?'1 M wie zum Rechtsstricken abheben':'Slip one knitwise','Y1SwoXDoXFM'],[de?'Blende umklappen und zusammenstricken':'Folded casing','t5tS_pxnmKY'],['M1R / M1L','eADPJrb9Ym8'],[de?'Schlingenanschlag':'Loop cast on','d8rdkITZ8r8'],[de?'Maschen auffassen':'Picking up stitches','_zIaUlG6zMg'],[de?'Abketten gegen Einrollen':'No-roll bind-off','_hFLbY5tAwE'],['I-Cord','vhr-Ovs5MOc']];
-  return `<section class="card">${stepList(L)}<p class="mu">${t('tapStep')}${DB.abbr?t('tapAb'):''}</p></section>
+  return `${gmGlossar(de)}<section class="card">${stepList(L)}<p class="mu">${t('tapStep')}${DB.abbr?t('tapAb'):''}</p></section>
   <section class="card"><h2>${t('tips')}</h2><ul style="padding-left:20px;margin:10px 0 0">`+(de?
    `<li style="margin-bottom:8px">Vorher eine Maschenprobe stricken: 21 Maschen x 32 Reihen glatt rechts = 10 x 10 cm. Die Nadelstärke ist nur ein Vorschlag.</li><li style="margin-bottom:8px">Das Top beim Stricken immer wieder anprobieren – so lässt sich die Passform anpassen, z. B. die Länge des Körpers.</li><li>Regelmäßig die Maschen zählen: Die Zahl hinter „danach … M auf der Nadel“ zeigt im Zähler, wie viele es sein sollten.</li>`:
    `<li style="margin-bottom:8px">Knit a gauge swatch first: 21 stitches x 32 rows stockinette = 10 x 10 cm. The needle size is only a suggestion.</li><li style="margin-bottom:8px">Try the top on as you go to adjust the fit, e.g. the body length.</li><li>Count your stitches regularly: the counter shows how many should be on the needle.</li>`)+
@@ -225,3 +227,18 @@ function vStepsCordoba(c){const de=DB.lang==='de',z=c.z,R=c.R,M=ab(de?'M':'st'),
   <p class="mu sm">${de?'Anleitung: Córdoba Top von Alma Patterns. Nur für den privaten Gebrauch.':'Pattern: Córdoba Top by Alma Patterns. Personal use only.'}</p></section>`}
 function gmRowOf(c,done){const de=DB.lang==='de';if(done)return de?`Alle ${c.total} Reihen und Runden fertig – das Top ist fertig!`:`All ${c.total} rows and rounds done – the top is finished!`;
   const r=c.R[S.row];return de?`Du strickst Reihe ${S.row+1} von ${c.total} · ${GMS.de[r.sec]}`:`Knitting row ${S.row+1} of ${c.total} · ${GMS.en[r.sec]}`}
+// Abkürzungen der Córdoba-Anleitung zum Nachlesen (aufklappbar), Texte aus dem Glossar GL
+function gmGlossar(de){const K=de?['M','R','Hin-R','Rück-R','re','li','re abh.','MM','M1R','M1L','abk.','I-Cord-Kordel']:['st','RS','WS','k','p','sl1kw','sm','pm','m1r','m1l','BO','i-cord-cord'];
+  const L=DB.lang;return `<section class="card"><details class="glc"><summary><h2>📖 ${de?'Abkürzungen in dieser Anleitung':'Abbreviations in this pattern'}</h2><span class="mu sm">${de?'Antippen zum Aufklappen':'Tap to open'}</span></summary>
+  <dl>${K.map(k=>{const f=FULL[L][k]||'',g=String(GL[L][k]||'');
+    // Erklärung ohne Wiederholung des Namens („Hinreihe: …“) und nur, wenn sie mehr sagt als der Name
+    const d=g.replace(/^([^:]{1,45}):\s*/,(m,x)=>x.toLowerCase().startsWith(f.toLowerCase().slice(0,6))?'':m);
+    return `<dt><b>${esc(k==='I-Cord-Kordel'||k==='i-cord-cord'?'I-Cord':k)}</b> <span class="mu">${esc(f)}</span></dt>${d.length>f.length+12?`<dd>${esc(d)}</dd>`:''}`}).join('')}</dl>
+  <p class="mu sm">${de?'Tipp: Unter Einstellungen „Abkürzungen verwenden“ ausschalten – dann steht in der ganzen App alles ausgeschrieben.':'Tip: turn off “Use abbreviations” in the settings to see every term written out.'}</p></details></section>`}
+// Skizze der Halsblende im Querschnitt: Streifen hoch, an der Bruchkante umgeknickt, unten mit dem Anschlag zusammengestrickt, Kordel im Tunnel
+function casingSvg(de){const T=de?['Anschlag','Reihe 1–4 (innen)','Bruchkante = Reihe 5','Reihe 6–9 (außen)','Reihe 10: zusammenstricken','Kordel','weiter mit der Passe']:['cast-on','rows 1–4 (inside)','fold line = row 5','rows 6–9 (outside)','row 10: knit together','cord','continue with the yoke'];
+  return `<figure class="csvg"><svg viewBox="0 0 330 168" role="img" aria-label="${de?'Skizze der Halsblende':'Casing diagram'}">
+    <path d="M70,150 L70,112 L70,38 Q85,14 100,38 L100,112" class="cs1"/><circle cx="100" cy="114" r="4" class="cs3"/>
+    <path d="M70,112 L100,112" class="cs2"/><circle cx="85" cy="74" r="9" class="cs4"/>
+    <g class="cst"><text x="112" y="118">${T[0]}</text><text x="112" y="80">${T[1]}</text><text x="104" y="22">${T[2]}</text><text x="6" y="60">${T[3].split(' (')[0]}</text><text x="6" y="74">(${T[3].split(' (')[1]}</text><text x="112" y="136">↖ ${T[4]}</text><text x="6" y="100">${T[5]} →</text><text x="78" y="164">↓ ${T[6]}</text></g></svg>
+    <figcaption class="mu sm">${de?'Querschnitt: links die Außenseite, die man später sieht, rechts die Innenseite am Hals.':'Cross-section: outside (visible) on the left, inside against the neck on the right.'}</figcaption></figure>`}

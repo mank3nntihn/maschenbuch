@@ -334,3 +334,12 @@ html[data-dark="1"] .fzx.k4{background:#33231c;border-color:#4d3328}html[data-da
 .rgl li{display:flex;flex-direction:column;align-items:center;min-width:56px;padding:6px 10px;border-radius:12px;background:color-mix(in srgb,var(--ac) 18%,var(--fld));font-size:12px;color:var(--mu)}
 .rgl li b{font-size:18px;color:var(--ink)}.rgl li.rr{min-width:0;background:transparent;border:1px dashed var(--ac)}
 .rgz{margin:8px 0 4px;font-size:15px}
+
+/* Córdoba: Erklärungen, Skizze der Halsblende, Abkürzungen */
+.gx{margin:4px 0 8px;line-height:1.5}
+ol.stp{margin:6px 0 6px;padding-left:22px}ol.stp li{margin:2px 0}
+.csvg{margin:6px 0 10px}.csvg svg{width:100%;max-width:420px;height:auto;display:block}
+.cs1{fill:none;stroke:var(--ac);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}.cs2{stroke:var(--ink);stroke-width:2;stroke-dasharray:4 3}
+.cs3{fill:var(--ink)}.cs4{fill:none;stroke:var(--ok);stroke-width:4}.cst{font:13.5px ui-rounded,system-ui,sans-serif;fill:var(--mu)}
+.glc summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.glc summary::-webkit-details-marker{display:none}
+.glc summary h2{margin:0}.glc dl{margin:12px 0 4px}.glc dt{margin-top:10px}.glc dd{margin:2px 0 0;line-height:1.45}
